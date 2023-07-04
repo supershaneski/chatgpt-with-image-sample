@@ -1,0 +1,140 @@
+.container {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.main {
+    position: relative;
+    height: 100%;
+}
+.header {
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    position: relative;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.title {
+    margin: 0;
+    text-align: center;
+}
+
+.messageList {
+    position: relative;
+    height: calc(100% - (90px + 50px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.messageItem {
+    padding: 1rem 1rem 0 1rem;
+    display: flex;
+    justify-content: flex-start;
+}
+.messageItem:last-child {
+    padding-bottom: 1rem;
+}
+
+.systemIcon {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+.userIcon {
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.message {
+    background-color: #e6e6e6;
+    position: relative;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 8px;
+}
+.text {
+    position: relative;
+    margin: 0;
+    white-space: pre-wrap;
+    z-index: 1;
+}
+.image {
+    position: relative;
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
+    object-position: 0% 0%;
+    border-bottom: 1px dotted gray;
+    padding-bottom: 1rem;
+    z-index: 1;
+}
+.desc {
+    font-size: .8rem;
+    font-style: italic;
+}
+
+.assistant {
+    background-color: #ccf7ff;
+}
+.user {
+    background-color: #e6e6e6;
+}
+
+.input {
+    background-color: var(--color-background);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 3;
+}
+.chat {
+    position: relative;
+    margin: 1rem;
+}
+
+.file {
+    display: none;
+}
+
+.loading {
+    position: relative;
+    padding: 1.1rem 0;
+}
+
+.close {
+    position: absolute;
+    left: -1rem;
+    top: -1rem;
+    z-index: 5;
+    display: none;
+}
+.close2 {
+    position: absolute;
+    right: -1rem;
+    top: -1rem;
+    z-index: 5;
+    display: none;
+}
+
+.message:hover .close, .message:hover .close2 {
+    display: block;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    .message {
+        background-color: #565656;
+    }
+    .assistant {
+        background-color: #005766;
+    }
+    .user {
+        background-color: #565656;
+    }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "chatgpt-with-image-sample",
+  "version": "0.0.1",
+  "description": "A sample React project built using Next 13",
+  "scripts": {
+    "dev": "next dev -p 4000",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.3",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.13.6",
+    "ml5": "^0.12.2",
+    "next": "^13.4.7",
+    "openai": "^3.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.3.8"
+  }
+}
