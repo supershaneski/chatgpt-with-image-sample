@@ -11,18 +11,18 @@ export async function chatCompletion({
     temperature = 0,
     messages,
     functions,
-    function_call = 'auto',
+    //function_call = 'auto',
 }) {
     
     try {
 
-        const result = await openai.createChatCompletion({
-            messages,
-            model,
-            temperature,
-            functions,
-            function_call,
-        })
+        let options = { messages, model, temperature }
+
+        if(functions) {
+            options.functions = functions
+        }
+
+        const result = await openai.createChatCompletion(options)
 
         if (!result.data.choices[0].message) {
             

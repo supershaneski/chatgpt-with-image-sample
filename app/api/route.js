@@ -3,14 +3,14 @@ import { trim_array } from '../../lib/utils'
 
 const functions = [
     {
-        name: "get_image_info",
-        description: "Get image info",
+        name: "get_image_file_info",
+        description: "Get image or file info",
         parameters: {
             type: "object",
             properties: {
                 inquiry: {
                     type: "string",
-                    description: "User inquiry about the image",
+                    description: "User inquiry about the image or file",
                 }
             },
             required: ["inquiry"]
@@ -27,6 +27,8 @@ export async function POST(request) {
             status: 400,
         })
     }
+
+    console.log('image', image)
     
     let prev_data = trim_array(previous, 20)
 
@@ -86,12 +88,13 @@ export async function POST(request) {
         }
         messages.push({ role: 'user', content: inquiry })
         messages.push(func_result)
-        messages.push({ role: 'function', name: 'get_image_info', content: image === null ? JSON.stringify({error: 'No image found'}) : JSON.stringify(image)})
+        messages.push({ role: 'function', name: 'get_image_file_info', content: image === null ? JSON.stringify({error: 'No image found'}) : JSON.stringify(image)})
 
         try {
 
             result = await chatCompletion({
                 messages,
+                temperature: 0.7,
                 functions,
                 //function_call: { name: 'get_event' }
             })
@@ -111,6 +114,11 @@ export async function POST(request) {
             })
     
         }
+
+        // Note: 
+        // It is possible to get function call response here.
+        // However, I am not handling it and just passing it 
+        // which will result to error response in the front end.
 
         return new Response(JSON.stringify({
             result,
@@ -132,7 +140,8 @@ export async function POST(request) {
 
         result = await chatCompletion({
             messages,
-            functions,
+            temperature: 0.7,
+            //functions,
             //function_call: { name: 'get_event' }
         })
 
@@ -144,16 +153,10 @@ export async function POST(request) {
 
     }
 
-    /*
-    result = {
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        role: 'assistant',
-    }
-    */
-
     return new Response(JSON.stringify({
         result,
     }), {
         status: 200,
     })
+
 }
