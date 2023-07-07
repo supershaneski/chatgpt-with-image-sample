@@ -2,6 +2,8 @@
 
 import React from 'react'
 
+import { createPortal } from 'react-dom'
+
 //import NoSsr from '@mui/base/NoSsr'
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
@@ -21,6 +23,7 @@ import OpenAiIcon from '../components/openailogo'
 
 import CustomTheme from '../components/customtheme'
 import LoadingText from '../components/loadingtext'
+import Loader from '../components/loader'
 
 import useDarkMode from '../lib/usedarkmode'
 //import useAppStore from '../stores/appstore'
@@ -42,9 +45,11 @@ export default function Sandbox() {
     const [inputText, setInputText] = React.useState('')
     const [messageItems, setMessageItems] = React.useState([])
     const [isProcessing, setProcessing] = React.useState(false)
-    const [isLoaded, setLoaded] = React.useState(false)
+    const [isLoading, setLoading] = React.useState(false)
     
     React.useEffect(() => {
+
+        setLoading(true)
 
         loadLibrary()
 
@@ -60,7 +65,7 @@ export default function Sandbox() {
 
     const onModelLoaded = () => {
 
-        setLoaded(true)
+        setLoading(false)
 
     }
 
@@ -346,7 +351,7 @@ export default function Sandbox() {
                                 startAdornment: (
                                     <InputAdornment position='start'>
                                         <IconButton 
-                                        disabled={!isLoaded}
+                                        disabled={isLoading}
                                         onClick={handleImage}>
                                             <ImageIcon />
                                         </IconButton>
@@ -377,6 +382,12 @@ export default function Sandbox() {
                     <input onChange={handleFile} accept='image/*' ref={fileRef} className={classes.file} type='file' />
                 </div>
             </div>
+            {
+                isLoading && createPortal(
+                    <Loader />,
+                    document.body
+                )
+            }
         </div>
     )
 }
