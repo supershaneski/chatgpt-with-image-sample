@@ -198,6 +198,8 @@ export default function Sandbox() {
                     if(err) {
                       console.log(err)
                     }
+
+                    console.log(results)
               
                     setProcessing(false)
                     
