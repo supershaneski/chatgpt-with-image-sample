@@ -21,8 +21,8 @@ Upload an image or take a photo (for mobile users) and　start chatting about it
 You can even chat about it in any language! すごいですよ？😊
 
 <picture>
- <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot3.png">
- <source media="(prefers-color-scheme: light)" srcset="./docs/screenshot4.png">
+ <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot4.png">
+ <source media="(prefers-color-scheme: light)" srcset="./docs/screenshot3.png">
  <img alt="Japanese" src="./docs/screenshot3.png">
 </picture>
 
