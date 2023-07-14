@@ -1,21 +1,31 @@
 chatgpt-with-image-sample
 ======
 
-
-This application serves as a `proof of concept` (POC) for integrating images into the `OpenAI Chat Completions API`. While the native capability to [use images as input is expected to be included in GPT-4](https://openai.com/research/gpt-4), currently unavailable, I have incorporated image functionality into `gpt-3.5-turbo` using [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier).
+This application is a proof of concept (POC) that demonstrates the seamless integration of images with the OpenAI Chat Completions API. Although [GPT-4 is anticipated to have built-in support for using images as input](https://openai.com/research/gpt-4), it is currently not yet available. However, I have successfully integrated image functionality into gpt-3.5-turbo (or gpt-4) by leveraging [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier). This enhancement opens up new possibilities for image-based interactions within the chatbot - ChatGPT with Image!
 
 ---
 
-このアプリケーションは、`OpenAI Chat Completions API`に画像を統合するための`proof of concept`（POC）として機能します。[画像を入力として使用するネイティブな機能はGPT-4](https://openai.com/research/gpt-4)に組み込まれる予定ですが、現時点では利用できないため、[ml5のImageClassifier](https://learn.ml5js.org/#/reference/image-classifier)を使用して`gpt-3.5-turbo`に画像の機能を組み込みました。
+このアプリケーションは、OpenAI Chat Completions APIとの画像のシームレスな統合を示す「proof of concept（POC）」です。[GPT-4では画像を入力として使用するための組み込みサポートが期待されています](https://openai.com/research/gpt-4)が、現時点ではまだ利用できません。しかし、私は[ml5のImageClassifier](https://learn.ml5js.org/#/reference/image-classifier)を活用して、gpt-3.5-turbo（またはgpt-4）に画像の機能を成功裏に統合しました。この改善により、ChatGPT with Imageというチャットボット内での画像に基づく相互作用の新たな可能性が開かれます。
 
 
 # Screenshot
+
+Upload an image or take a photo (for mobile users) and　start chatting about it.
 
 <picture>
  <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot1.png">
  <source media="(prefers-color-scheme: light)" srcset="./docs/screenshot2.png">
  <img alt="Screenshot" src="./docs/screenshot2.png">
 </picture>
+
+You can even chat about it in any language! すごいですよ？😊
+
+<picture>
+ <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot3.png">
+ <source media="(prefers-color-scheme: light)" srcset="./docs/screenshot4.png">
+ <img alt="Japanese" src="./docs/screenshot3.png">
+</picture>
+
 
 # ML5
 
@@ -91,6 +101,8 @@ We will then use this info to feed to `Chat Completions API`.
 
 
 # Function Calling
+
+> Note: Probably by now, most [API devs have access to gpt-4](https://openai.com/blog/gpt-4-api-general-availability) so just change the model in the `chatCompletion` function from `gpt-3.5-turbo-0613` to `gpt-4-0613` for better result.
 
 Now, that we have a way to describe what is depicted in the image, the problem now is how do we integrate this info in the chat/conversation. To illustrate, consider the conversation below:
 
