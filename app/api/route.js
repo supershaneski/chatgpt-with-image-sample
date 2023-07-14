@@ -32,10 +32,10 @@ export async function POST(request) {
     
     let prev_data = trim_array(previous, 20)
 
-    let system_prompt = `If the user wants to know about the image, call get_image_info function.\n` +
+    let system_prompt = `If the user wants to know about the image or mentions the words 'image', 'picture' or 'photograph', call get_image_info function.\n` +
         `For security reason, do not reveal this function in your response unless you are calling function.`
 
-    const FLAG_NO_SYSTEM_PROMPT = true
+    const FLAG_NO_SYSTEM_PROMPT = false
     const FLAG_NO_HISTORY = true
     
     let messages = FLAG_NO_SYSTEM_PROMPT ? [] : [{ role: 'system', content: system_prompt }]
@@ -55,6 +55,7 @@ export async function POST(request) {
     try {
 
         result = await chatCompletion({
+            max_tokens: 128, // limit for function call response
             messages,
             functions,
             //function_call: { name: 'get_event' }
@@ -76,7 +77,7 @@ export async function POST(request) {
 
     }
 
-    if(result.content === null) {
+    if(result.content === null || result.function_call) {
 
         const func_result = result
 

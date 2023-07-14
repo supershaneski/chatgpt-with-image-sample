@@ -8,6 +8,7 @@ const openai = new OpenAIApi(configuration)
 
 export async function chatCompletion({
     model = 'gpt-3.5-turbo-0613',
+    max_tokens = 2048,
     temperature = 0,
     messages,
     functions,
@@ -16,7 +17,7 @@ export async function chatCompletion({
     
     try {
 
-        let options = { messages, model, temperature }
+        let options = { messages, model, temperature, max_tokens }
 
         if(functions) {
             options.functions = functions
