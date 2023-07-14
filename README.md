@@ -10,7 +10,7 @@ This application is a proof of concept (POC) that demonstrates the seamless inte
 
 # Screenshot
 
-Upload an image or take a photo (for mobile users) and　start chatting about it.
+Upload an image or take a photo (for mobile users) and start chatting about it.
 
 <picture>
  <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot1.png">
