@@ -32,7 +32,7 @@ import useCaption from '../lib/usecaption'
 import captions from '../assets/captions.json'
 //import useAppStore from '../stores/appstore'
 
-import { welcome_greeting, getSimpleId } from '../lib/utils'
+import { welcome_greeting, getSimpleId, compact } from '../lib/utils'
 
 import classes from './sandbox.module.css'
 
@@ -51,8 +51,7 @@ export default function Sandbox() {
 
     const [inputFocus, setInputFocus] = React.useState(false)
     const [previewImage, setPreviewImage] = React.useState([])
-    const [previewData, setPreviewData] = React.useState({})
-    //const previewImageRef = React.useRef(null)
+    //const [previewData, setPreviewData] = React.useState([])
     
     const [inputText, setInputText] = React.useState('')
     const [messageItems, setMessageItems] = React.useState([])
@@ -60,6 +59,8 @@ export default function Sandbox() {
     const [isLoading, setLoading] = React.useState(false)
     
     React.useEffect(() => {
+
+        console.log('max-count', process.env.maxFileUploadCount)
 
         welcome_greeting()
 
@@ -74,20 +75,6 @@ export default function Sandbox() {
         e.preventDefault()
 
         setProcessing(true)
-
-        const images = messageItems.filter(item => item.type === 'image').map(item => {
-            return {
-                data: {
-                    lastModified: item.data.lastModified,
-                    name: item.data.name,
-                    size: item.data.size,
-                    type: item.data.type,
-                },
-                description: item.description,
-            }
-        })
-
-        const current_image = images.length > 0 ? images[images.length - 1] : null
 
         const previous = messageItems.filter(item => item.type === 'text' && item.role !== 'error').map(item => {
             return {
@@ -111,7 +98,58 @@ export default function Sandbox() {
 
         if(previewImage.length > 0) {
 
-            newUserItem.image = previewImage
+            let uploaded_files = await Promise.all(
+                Array.from(previewImage).map(async (image) => {
+
+                    const formData = new FormData()
+                    formData.append('file', image.file)
+                    formData.append('name', image.file.name)
+
+                    try {
+
+                        const response_upload = await fetch('/upload/', {
+                            method: 'POST',
+                            headers: {
+                                //'Content-Type': 'multipart/form-data',
+                                'Accept': 'application/json',
+                            },
+                            body: formData,
+                            //signal: abortControllerRef.current.signal,
+                        })
+
+                        if(!response_upload.ok) {
+                            console.log("Oops, an error occurred.", response_upload.status)
+                        }
+
+                        const result_upload = await response_upload.json()
+
+                        const _name = result_upload.name
+                        const _url = result_upload.url
+
+                        return {
+                            id: image.id,
+                            name: _name,
+                            _name: image.file.name,
+                            src: _url,
+                            url: _url,
+                            _url: URL.createObjectURL(image.file),
+                            type: image.file.type,
+                            size: image.file.size,
+                        }
+
+                    } catch(error) {
+                        
+                        return null
+
+                    }
+
+                })
+            )
+            uploaded_files = compact(uploaded_files)
+
+            console.log("uploaded", uploaded_files)
+
+            newUserItem.image = uploaded_files
 
             setPreviewImage([])
 
@@ -136,8 +174,7 @@ export default function Sandbox() {
                 body: JSON.stringify({
                     lang,
                     inquiry,
-                    previous,
-                    image: current_image,
+                    previous
                 })
             })
 
@@ -147,23 +184,18 @@ export default function Sandbox() {
 
             const ret = await response.json()
 
-            let text = 'Unexpected error'
-            let ret_image = []
+            
 
             console.log("received response...", (new Date()).toLocaleTimeString())
             console.log(ret)
 
-            if(Object.keys(ret.result).length > 0) {
+            let text = ret.result.content || setCaption('unexpected_error')
+            let ret_image = []
 
-                text = ret.result.content ? ret.result.content : text
+            if(ret.result.image && Array.isArray(ret.result.image) && ret.result.image.length > 0) {
 
-                if(ret.result.image && Array.isArray(ret.result.image) && ret.result.image.length > 0) {
+                ret_image = ret.result.image
 
-                    ret_image = ret.result.image
-    
-                    console.log(ret_image)
-    
-                }
             }
             
 
@@ -239,10 +271,16 @@ export default function Sandbox() {
 
             image.onload = function() {
 
-                //previewImageRef.current.src = image.src
-                //setPreviewImage(image.src)
+                //setPreviewImage((prevImgs) => [...prevImgs, ...[image.src]])
 
-                setPreviewImage((prevImgs) => [...prevImgs, ...[image.src]])
+                const newImage = {
+                    id: Date.now(),
+                    src: image.src,
+                    file: file
+                }
+
+                setPreviewImage((prevImgs) => [...prevImgs, ...[newImage]])
+
                 /*setPreviewData({
                     lastModified: file.lastModified,
                     name: file.name,
@@ -273,9 +311,9 @@ export default function Sandbox() {
 
     }
 
-    const handleDeleteImage = (index) => {
+    const handleDeleteImage = (id) => {
         
-        setPreviewImage((prev) => prev.filter((a, i) => i !== index))
+        setPreviewImage((prev) => prev.filter((img) => img.id !== id))
 
     }
 
@@ -286,10 +324,11 @@ export default function Sandbox() {
     }
 
     const handleBlur = () => {
-        console.log("blur...")
+        
         timerRef.current = setTimeout(() => {
             setInputFocus(false)
         }, 200)
+
     }
 
     const handleClear = () => {
@@ -327,9 +366,11 @@ export default function Sandbox() {
                                             (item.role === 'user' && item.image && Array.isArray(item.image) && item.image.length > 0) &&
                                             <div className={classes.imageList}>
                                             {
-                                                item.image.map((img, i) => {
+                                                item.image.map((img) => {
                                                     return (
-                                                        <img key={i} className={classes.image} src={img} />
+                                                        <a class={classes.link} key={img.id} href={`${img.src}`} target="_blank">
+                                                            <img className={classes.image} src={img.src} />
+                                                        </a>
                                                     )
                                                 })
                                             }
@@ -347,9 +388,11 @@ export default function Sandbox() {
                                             (item.role === 'assistant' && item.image && Array.isArray(item.image) && item.image.length > 0) &&
                                             <div className={classes.imageList}>
                                             {
-                                                item.image.map((img, i) => {
+                                                item.image.map((img) => {
                                                     return (
-                                                        <img key={i} className={classes.image} src={img} />
+                                                        <a class={classes.linkOut} key={img.id} href={`${img.src}`} target="_blank">
+                                                            <img key={img.src} className={classes.imageOut} src={img.src} />
+                                                        </a>
                                                     )
                                                 })
                                             }
@@ -397,14 +440,14 @@ export default function Sandbox() {
                         previewImage.length > 0 &&
                         <div className={classes.previewContainer}>
                             {
-                                previewImage.map((img, index) => {
+                                previewImage.map((img) => {
                                     return (
-                                        <div className={classes.preview} key={index}>
-                                            <img src={img} className={classes.previewImage} />
+                                        <div className={classes.preview} key={img.id}>
+                                            <img src={img.src} className={classes.previewImage} />
                                             <div className={classes.previewClose}>
                                                 <IconButton 
                                                 disabled={isProcessing}
-                                                onClick={() => handleDeleteImage(index)}>
+                                                onClick={() => handleDeleteImage(img.id)}>
                                                     <ClearIcon className={classes.deleteIcon} />
                                                 </IconButton>
                                             </div>
@@ -433,7 +476,7 @@ export default function Sandbox() {
                                 startAdornment: (
                                     <InputAdornment position='start'>
                                         <IconButton 
-                                        disabled={isProcessing || isLoading}
+                                        disabled={isProcessing || previewImage.length >= process.env.maxFileUploadCount}
                                         onClick={handleImage}>
                                             <ImageIcon />
                                         </IconButton>

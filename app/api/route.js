@@ -13,6 +13,29 @@ export async function POST(request) {
         })
     }
 
+    const forceFlag = true
+    if(forceFlag) {
+
+        console.log((new Date()).toLocaleTimeString())
+
+        const chance = Math.round(10 * Math.random())
+
+        if(chance > 5) {
+
+            throw new Error('Forced error occurred')
+
+        } else {
+
+            return new Response(JSON.stringify({
+                result: { role: 'assistant', content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.' },
+            }), {
+                status: 200,
+            })
+
+        }
+
+    }
+
     const functions = [create_image_dalle]
     
     let prev_data = trim_array(previous, 20)
