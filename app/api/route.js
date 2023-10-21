@@ -13,7 +13,7 @@ export async function POST(request) {
         })
     }
 
-    const forceFlag = true
+    const forceFlag = false
     if(forceFlag) {
 
         console.log((new Date()).toLocaleTimeString())

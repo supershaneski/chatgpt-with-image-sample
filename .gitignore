@@ -13,7 +13,12 @@ dist-ssr
 *.local
 
 # My ignore list
-public/uploads/*
+public/uploads/*.png
+public/uploads/*.jpg
+public/uploads/*.jpeg
+public/uploads/*.gif
+public/uploads/*.bmp
+public/uploads/*.svg
 _bin
 stories
 .next

@@ -93,6 +93,7 @@ export default function Sandbox() {
             role: 'user',
             content: inquiry,
             type: 'text',
+            //image: [],
             datetime: (new Date()).toISOString(),
         }
 
