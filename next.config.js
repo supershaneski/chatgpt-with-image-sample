@@ -8,7 +8,7 @@ const nextConfig = {
     return config
   },
   env: {
-    siteTitle: 'ChatGPT with Image',
+    siteTitle: 'Chat with Image + DALL·E',
   },
   trailingSlash: true,
   experimental: {

@@ -1,8 +1,11 @@
 .container {
-    position: fixed;
+    /*position: fixed;
     left: 0;
     bottom: 0;
     width: 100vw;
+    height: 100vh;
+    */
+    position: relative;
     height: 100vh;
 }
 
@@ -29,6 +32,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     box-sizing: border-box;
+    scroll-behavior: smooth;
 }
 
 .messageItem {
@@ -62,15 +66,36 @@
     white-space: pre-wrap;
     z-index: 1;
 }
-.image {
+.error {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: #999;
+}
+.error::before {
+    content: "\26A0";
+    display: inline-block;
+    margin-right: 5px;
+}
+.imageList {
     position: relative;
-    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+}
+.image {
+    background-color: #fafafa;
+    background-image: linear-gradient(45deg, #9995 25%, transparent 25%, transparent 75%, #9995 75%), linear-gradient(45deg, #9995 25%, transparent 25%, transparent 75%, #9995 75%);
+    background-position: 0 0, 10px 10px;
+    background-size: calc(10px * 2) calc(10px * 2);
+    position: relative;
+    /*width: 100%;*/
+    /*width: 48%;
     height: auto;
-    max-height: 200px;
+    max-height: 300px;*/
     object-fit: contain;
-    object-position: 0% 0%;
-    border-bottom: 1px dotted gray;
-    padding-bottom: 1rem;
+    /*object-position: 0% 0%;*/
+    /*border-bottom: 1px dotted gray;
+    padding-bottom: 1rem;*/
+    margin-left: 2px;
+    margin-bottom: 2px;
     z-index: 1;
 }
 .desc {
@@ -79,25 +104,55 @@
 }
 
 .assistant {
-    background-color: #ccf7ff;
+    background-color: #e6fbff; /*ccf7ff*/
+    border-bottom-left-radius: 0;
 }
 .user {
-    background-color: #e6e6e6;
+    background-color: #f2f2f2; /*e6e6e6*/
+    border-bottom-right-radius: 0;
+}
+.system {
+    background-color: #ffe6e6;
+    border-bottom-left-radius: 0;
 }
 
 .input {
     background-color: var(--color-background);
-    position: absolute;
+    /*background-color: chartreuse;*/
+    /*position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;*/
+    position: fixed;
     left: 0;
     bottom: 0;
     width: 100%;
     z-index: 3;
+    display: flex;
+    align-items: center;
+}
+.retry {
+    position: relative;
+    margin-left: 1rem;
+    z-index: 1;
 }
 .chat {
+    /*border: 1px solid #999;*/
+    flex-grow: 1;
+    position: relative;
+    border-radius: 6px;
     position: relative;
     margin: 1rem;
+    overflow: hidden;
+    transition: all .3s ease-in-out;
+    z-index: 2;
 }
-
+.selected {
+    border: 1px solid #777;
+}
+.default {
+    border: 1px solid #e6e6e6;
+}
 .file {
     display: none;
 }
@@ -121,20 +176,170 @@
     z-index: 5;
     display: none;
 }
+.closeIcon {
+    color: #999;
+}
 
 .message:hover .close, .message:hover .close2 {
     display: block;
 }
-
-
+.previewContainer {
+    position: relative;
+    margin: 1rem 1rem 0 1rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+.preview {
+    /*background:
+    repeating-linear-gradient(45deg, 
+      black 0, black 6px, 
+      white 6px, white 12px),
+    repeating-linear-gradient(45deg, 
+      white 0, white 6px, 
+      black 6px, black 12px);
+    background-position: 0 0, 6px 6px;*/
+    /*background-size: 24px 24px;
+    background-image:
+    linear-gradient(90deg, black 50%, white 50%),
+    linear-gradient(180deg, green 50%, red 50%);*/
+    background-color: #fafafa;
+    background-image: linear-gradient(45deg, #9995 25%, transparent 25%, transparent 75%, #9995 75%), linear-gradient(45deg, #9995 25%, transparent 25%, transparent 75%, #9995 75%);
+    background-position: 0 0, 10px 10px;
+    background-size: calc(10px * 2) calc(10px * 2);
+    position: relative;
+    /*width: 356px;
+    height: 200px;*/
+    /*width: 30%;
+    height: 200px;*/
+    /*margin-top: 1rem;*/
+    display: inline-block;
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+/*.preview:first-child {
+    margin-left: 1rem;
+}*/
+/*.preview + .preview {
+    margin-left: 5px;
+}*/
+.previewImage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
+}
+.previewClose {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+}
+.deleteIcon {
+    color: #999;
+}
 @media (prefers-color-scheme: dark) {
     .message {
         background-color: #565656;
     }
     .assistant {
-        background-color: #005766;
+        background-color: #00414d;/*005766*/
     }
     .user {
-        background-color: #565656;
+        background-color: #333;/*565656*/
+    }
+    .system {
+        background-color: #4d0000;
+    }
+
+    .selected {
+        border: 1px solid #e6e6e6;
+    }
+    .default {
+        border: 1px solid #555;
+    }
+    .error {
+        color: #999;
+    }
+    .closeIcon {
+        color: #555;
+    }
+    .deleteIcon {
+        color: #999;
+    }
+}
+
+/* Extra small devices (phones, up to 600px) */
+@media only screen and (max-width: 600px) {
+    /*.previewContainer {
+        background-color: chocolate;
+    }*/
+    .preview {
+        width: 47%;
+        height: 100px;
+    }
+    .image {
+        width: 100%;
+        height: auto;
+    }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+    /*.previewContainer {
+        background-color: mediumaquamarine;
+    }*/
+    .preview {
+        width: 31%;
+        height: 120px;
+    }
+    .image {
+        width: 100%;
+        height: auto;
+    }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+    /*.previewContainer {
+        background-color: lemonchiffon;
+    }*/
+    .preview {
+        width: 32%;
+        height: 150px;
+    }
+    .image {
+        width: 49%;
+        height: 250px;
+    }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+    /*.previewContainer {
+        background-color: forestgreen;
+    }*/
+    .preview {
+        width: 24%;
+        height: 170px;
+    }
+    .image {
+        width: 49%;
+        height: 275px;
+    }
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+    /*.previewContainer {
+        background-color: azure;
+    }*/
+    .preview {
+        width: 350px;
+        height: 200px;
+    }
+    .image {
+        width: 550px;
+        height: 300px;
     }
 }
