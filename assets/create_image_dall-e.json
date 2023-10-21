@@ -1,0 +1,33 @@
+{
+    "name": "create_image_dall-e",
+    "description": "Create image in DALL-E based prompt provided",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "The prompt based from user input"
+            },
+            "size": {
+                "type": "string",
+                "description": "The size of the image, use the default if the user does not provide any",
+                "default": "256x256",
+                "enum": [
+                    "256x256",
+                    "512x512",
+                    "1024x1024"
+                ]
+            },
+            "image_count": {
+                "type": "integer",
+                "description": "The number of images to generate, between 1 and 10",
+                "default": 0
+            },
+            "waiting_message": {
+                "type": "string",
+                "description": "A message to tell the user while the image is being created"
+            }
+        },
+        "required": ["prompt", "size", "waiting_message", "image_count"]
+    }
+}
