@@ -1,12 +1,14 @@
 {
   "name": "chatgpt-with-image-sample",
-  "version": "0.0.1",
-  "description": "A sample React project built using Next 13",
+  "version": "0.0.2",
+  "description": "A sample project that integrates GPT-4 Vision and DALL-E 3 in a Chat application.",
   "scripts": {
     "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start"
   },
+  "author": "supershaneski",
+  "license": "MIT",
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
