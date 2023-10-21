@@ -13,31 +13,6 @@ export async function POST(request) {
         })
     }
 
-    //////////// 2023/10/19 test
-    const forceFlag = false
-    if(forceFlag) {
-
-        console.log((new Date()).toLocaleTimeString())
-
-        const chance = Math.round(10 * Math.random())
-
-        if(chance > 5) {
-
-            throw new Error('Forced error occurred')
-
-        } else {
-
-            return new Response(JSON.stringify({
-                result: { role: 'assistant', content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.' },
-            }), {
-                status: 200,
-            })
-
-        }
-
-    }
-    //////////// end test
-
     const functions = [create_image_dalle]
     
     let prev_data = trim_array(previous, 20)
@@ -67,7 +42,6 @@ export async function POST(request) {
         result = await chatCompletion({
             messages,
             functions
-            //function_call: { name: 'get_event' }
         })
 
         console.log('function call', result)
@@ -111,7 +85,7 @@ export async function POST(request) {
             return new Response(JSON.stringify({
                 result: { 
                     role: 'assistant', 
-                    content: waiting_message, //func_result.function_call.arguments,
+                    content: waiting_message,
                     image: image.data.map((img) => img.url)
                 },
             }), {

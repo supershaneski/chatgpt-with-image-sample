@@ -43,7 +43,6 @@ export default function Sandbox() {
 
     const [lang, setCaption] = useCaption(captions)
 
-    //const classifyRef = React.useRef()
     const fileRef = React.useRef(null)
     const inputRef = React.useRef(null)
     const messageRef = React.useRef(null)
@@ -64,26 +63,7 @@ export default function Sandbox() {
 
         welcome_greeting()
 
-        //setLoading(true)
-        //loadLibrary()
-
     }, [])
-
-    const loadLibrary = async () => {
-
-        setLoading(true)
-        
-        //const ml5 = (await import('ml5')).default
-
-        //classifyRef.current = ml5.imageClassifier('MobileNet', onModelLoaded)
-
-    }
-
-    const onModelLoaded = () => {
-
-        setLoading(false)
-
-    }
 
     const handleSubmit = async (e) => {
 
@@ -120,24 +100,6 @@ export default function Sandbox() {
 
         const inquiry = inputText
 
-        /*
-        const newUserItem = {
-                        id: getSimpleId(),
-                        gid: getSimpleId(),
-                        role: 'user',
-                        type: 'image',
-                        data: {
-                            lastModified: file.lastModified,
-                            name: file.name,
-                            size: file.size,
-                            type: file.type,
-                        },
-                        description: results,
-                        image: reader.result,
-                        datetime: (new Date()).toISOString(),
-                    }
-        */
-
         let newUserItem = {
             id: getSimpleId(),
             gid: groupId,
@@ -150,14 +112,13 @@ export default function Sandbox() {
         if(previewImage.length > 0) {
 
             newUserItem.image = previewImage
-            //newUserItem.data = previewData
 
             setPreviewImage([])
+
         }
 
         setMessageItems((prev) => [...prev, ...[newUserItem]])
 
-        
         setInputText('')
         
         inputRef.current.blur()
@@ -221,9 +182,6 @@ export default function Sandbox() {
             
             setMessageItems((prev) => [...prev, ...[newAssistantItem]])
             
-            //resetScroll()
-            //inputRef.current.focus()
-
         } catch(error) {
             
             console.log(error)
@@ -247,8 +205,6 @@ export default function Sandbox() {
 
         }
 
-        
-
     }
 
     const resetScroll = (flag = false) => {
@@ -262,7 +218,6 @@ export default function Sandbox() {
     }
 
     const handleImage = () => {
-        console.log("click...", (new Date()).toLocaleTimeString())
         clearTimeout(timerRef.current)
         fileRef.current.click()
     }
