@@ -128,8 +128,10 @@
 }
 .retry {
     position: relative;
-    margin-left: 1rem;
+    /*margin-left: 1rem;*/
     z-index: 1;
+    overflow: hidden;
+    transition: width 0.2s ease-in;
 }
 .chat {
     /*border: 1px solid #999;*/
@@ -243,9 +245,13 @@
     display: inline-block;
     margin-left: 2px;
     margin-bottom: 2px;
+    transition: all 0.2s ease-in;
 }
-.link:hover, .linkOut:hover {
+.link:hover {
     border: 1px solid #555;
+}
+.linkOut:hover {
+    border: 1px solid #00D8FF;
 }
 
 @media (prefers-color-scheme: dark) {

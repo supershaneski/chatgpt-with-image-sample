@@ -210,7 +210,10 @@ export default function Sandbox() {
             }
 
             if(ret_image.length > 0) {
-                newAssistantItem.image = ret_image
+                newAssistantItem.image = ret_image.map((img) => ({
+                    id: getSimpleId(),
+                    src: img 
+                }))
             }
             
             setMessageItems((prev) => [...prev, ...[newAssistantItem]])
@@ -369,7 +372,7 @@ export default function Sandbox() {
                                             {
                                                 item.image.map((img) => {
                                                     return (
-                                                        <a class={classes.link} key={img.id} href={`${img.src}`} target="_blank">
+                                                        <a className={classes.link} key={img.id} href={`${img.src}`} target="_blank">
                                                             <img className={classes.image} src={img.src} />
                                                         </a>
                                                     )
@@ -391,7 +394,7 @@ export default function Sandbox() {
                                             {
                                                 item.image.map((img) => {
                                                     return (
-                                                        <a class={classes.linkOut} key={img.id} href={`${img.src}`} target="_blank">
+                                                        <a className={classes.linkOut} key={img.id} href={`${img.src}`} target="_blank">
                                                             <img key={img.src} className={classes.imageOut} src={img.src} />
                                                         </a>
                                                     )
@@ -428,14 +431,19 @@ export default function Sandbox() {
                 </div>
             </div>
             <div className={classes.input}>
-                {
-                    (!inputFocus && messageItems.length > 0) &&
-                    <div className={classes.retry}>
-                        <Fab onClick={handleReset} size="medium" color="primary">
-                            <RestartIcon />
-                        </Fab>
+                
+                    <div className={classes.retry} style={{
+                        width: !inputFocus && messageItems.length > 0 ? '48px' : '0px',
+                        marginLeft: !inputFocus && messageItems.length > 0 ? '1rem' : '0px'
+                    }}>
+                        {
+                        !inputFocus && messageItems.length > 0 &&
+                            <Fab onClick={handleReset} size="medium" color="primary">
+                                <RestartIcon />
+                            </Fab>
+                        }
                     </div>
-                }
+                
                 <div className={`${classes.chat} ${classBorderline}`}>
                     {
                         previewImage.length > 0 &&
