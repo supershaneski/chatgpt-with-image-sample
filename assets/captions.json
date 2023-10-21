@@ -1,0 +1,6 @@
+{
+    "send_message": ["Send message", "メッセージを送る"],
+    "send_reply": ["Send reply", "返信を送信"],
+    "done_here_is_the_image": ["Done! Here's the image you requested...", "終わり！ リクエストいただいた画像はこちらです..."],
+    "done_here_are_the_images": ["Done! Here are the images you requested...", "終わり！ リクエストいただいた画像はこちらです..."]
+}

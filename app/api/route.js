@@ -1,45 +1,13 @@
 import { chatCompletion, imageCompletion } from '../../services/openai'
 import { trim_array } from '../../lib/utils'
 import create_image_dalle from '../../assets/create_image_dall-e.json'
-
-/*
-const functions = [
-    {
-        name: "get_image_file_info",
-        description: "Get image or file info",
-        parameters: {
-            type: "object",
-            properties: {
-                inquiry: {
-                    type: "string",
-                    description: "User inquiry about the image or file",
-                }
-            },
-            required: ["inquiry"]
-        }
-    },
-    {
-        name: "create_image_dall-e",
-        description: "Create image in DALL-E based prompt provided",
-        parameters: {
-            type: "object",
-            properties: {
-                prompt: {
-                    type: "string",
-                    description: "The prompt based from user input",
-                }
-            },
-            required: ["prompt"]
-        }
-    }
-]
-*/
+import captions from '../../assets/captions.json'
 
 export async function POST(request) {
 
-    const { image, system, inquiry, previous } = await request.json()
+    const { lang = 0, inquiry, previous } = await request.json()
 
-    if (!system || !inquiry || !Array.isArray(previous)) {
+    if (!inquiry || !Array.isArray(previous)) {
         return new Response('Bad request', {
             status: 400,
         })
@@ -130,7 +98,7 @@ export async function POST(request) {
             const image_prompt = func_args.prompt
             const image_size = func_args.size || '256x256'
             const image_count = func_args.image_count && func_args.image_count > 0 ? parseInt(func_args.image_count) : 1
-            const waiting_message = image_count > 1 ? "Done! Here are the images you requested..." : "Done! Here's the image you requested..."
+            const waiting_message = image_count > 1 ? captions.done_here_are_the_images[lang] : captions.done_here_is_the_image[lang] //"Done! Here are the images you requested..." : "Done! Here's the image you requested..."
 
             const image = await imageCompletion({ 
                 prompt: image_prompt,

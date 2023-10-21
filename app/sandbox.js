@@ -28,6 +28,8 @@ import LoadingText from '../components/loadingtext'
 import Loader from '../components/loader'
 
 import useDarkMode from '../lib/usedarkmode'
+import useCaption from '../lib/usecaption'
+import captions from '../assets/captions.json'
 //import useAppStore from '../stores/appstore'
 
 import { welcome_greeting, getSimpleId } from '../lib/utils'
@@ -39,7 +41,9 @@ export default function Sandbox() {
 
     useDarkMode()
 
-    const classifyRef = React.useRef()
+    const [lang, setCaption] = useCaption(captions)
+
+    //const classifyRef = React.useRef()
     const fileRef = React.useRef(null)
     const inputRef = React.useRef(null)
     const messageRef = React.useRef(null)
@@ -69,9 +73,9 @@ export default function Sandbox() {
 
         setLoading(true)
         
-        const ml5 = (await import('ml5')).default
+        //const ml5 = (await import('ml5')).default
 
-        classifyRef.current = ml5.imageClassifier('MobileNet', onModelLoaded)
+        //classifyRef.current = ml5.imageClassifier('MobileNet', onModelLoaded)
 
     }
 
@@ -160,8 +164,6 @@ export default function Sandbox() {
 
         resetScroll()
 
-        const system = `You are a helpful assistant.`
-
         try {
 
             const response = await fetch('/api/', {
@@ -171,7 +173,7 @@ export default function Sandbox() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    system,
+                    lang,
                     inquiry,
                     previous,
                     image: current_image,
@@ -284,6 +286,7 @@ export default function Sandbox() {
 
                 //previewImageRef.current.src = image.src
                 //setPreviewImage(image.src)
+
                 setPreviewImage((prevImgs) => [...prevImgs, ...[image.src]])
                 /*setPreviewData({
                     lastModified: file.lastModified,
@@ -294,37 +297,6 @@ export default function Sandbox() {
 
                 setProcessing(false)
 
-                /*classifyRef.current.classify(image, (err, results) => {
-
-                    if(err) {
-                      console.log(err)
-                    }
-
-                    console.log(results)
-              
-                    setProcessing(false)
-                    
-                    const newUserItem = {
-                        id: getSimpleId(),
-                        gid: getSimpleId(),
-                        role: 'user',
-                        type: 'image',
-                        data: {
-                            lastModified: file.lastModified,
-                            name: file.name,
-                            size: file.size,
-                            type: file.type,
-                        },
-                        description: results,
-                        image: reader.result,
-                        datetime: (new Date()).toISOString(),
-                    }
-                    
-                    setMessageItems((prev) => [...prev, ...[newUserItem]])
-        
-                    resetScroll()
-                    
-                })*/
             }
 
             image.onerror = function(error) {
@@ -494,7 +466,7 @@ export default function Sandbox() {
                         noValidate>
                             <TextField 
                             sx={{ "& fieldset": { border: 'none' } }}
-                            placeholder='Send message'
+                            placeholder={setCaption(messageItems.length > 1 ? 'send_reply' : 'send_message')}
                             disabled={isProcessing}
                             fullWidth
                             inputRef={inputRef}
