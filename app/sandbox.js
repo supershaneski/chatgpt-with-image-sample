@@ -447,9 +447,11 @@ export default function Sandbox() {
                     }}>
                         {
                         !inputFocus && messageItems.length > 0 &&
-                            <Fab onClick={handleReset} size="medium" color="primary">
-                                <RestartIcon />
-                            </Fab>
+                            <div className={classes.roundButton}>
+                                <IconButton size="large" onClick={handleReset}>
+                                    <RestartIcon sx={{color: '#fff'}} fontSize="inherit" />
+                                </IconButton>
+                            </div>
                         }
                     </div>
                 

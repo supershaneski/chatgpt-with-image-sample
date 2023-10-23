@@ -104,7 +104,7 @@
 }
 
 .assistant {
-    background-color: #e6fbff; /*ccf7ff*/
+    background-color: #1da5fb; /*#e6fbff; *//*ccf7ff*/
     border-bottom-left-radius: 0;
 }
 .user {
@@ -138,6 +138,15 @@
     overflow: hidden;
     transition: width 0.2s ease-in;
 }
+.roundButton {
+    background-color: #28a5fb;
+    position: relative;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    border-radius: 50%;
+}
 .chat {
     /*border: 1px solid #999;*/
     flex-grow: 1;
@@ -147,7 +156,7 @@
     margin: 1rem;
     overflow: hidden;
     transition: all .3s ease-in-out;
-    z-index: 2;
+    z-index: 5;
 }
 .selected {
     border: 1px solid #777;
@@ -259,6 +268,10 @@
     border: 1px solid #00D8FF;
 }
 
+.assistant .text {
+    color: #fff;
+}
+
 @media (prefers-color-scheme: dark) {
     .header {
         box-shadow: none;
@@ -268,7 +281,10 @@
         background-color: #565656;
     }
     .assistant {
-        background-color: #00414d;/*005766*/
+        background-color: #1da5fb; /*#00414d;*//*005766*/
+    }
+    .assistant .text {
+        color: #fff;
     }
     .user {
         background-color: #333;/*565656*/
