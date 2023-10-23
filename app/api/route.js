@@ -5,7 +5,10 @@ import { pipeline } from 'stream'
 
 import { chatCompletion, imageCompletion } from '../../services/openai'
 import { trim_array, compact } from '../../lib/utils'
+
 import create_image_dalle from '../../assets/create_image_dall-e.json'
+import get_image_for_analysis from '../../assets/get_image_for_analysis.json'
+
 import captions from '../../assets/captions.json'
 
 const streamPipeline = promisify(pipeline)
@@ -81,7 +84,7 @@ export async function POST(request) {
     }
     */
 
-    const functions = [create_image_dalle]
+    const functions = [create_image_dalle, get_image_for_analysis]
     
     let prev_data = trim_array(previous, 20)
 
@@ -261,6 +264,12 @@ export async function POST(request) {
                 status: 200,
             })
             */
+
+        } else {
+
+            console.log("other-function")
+
+            console.log("OTHERS", func_result)
 
         }
 
