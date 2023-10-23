@@ -1,7 +1,14 @@
+import fs from 'fs'
+import path from 'path'
+import { promisify } from 'util'
+import { pipeline } from 'stream'
+
 import { chatCompletion, imageCompletion } from '../../services/openai'
-import { trim_array } from '../../lib/utils'
+import { trim_array, compact } from '../../lib/utils'
 import create_image_dalle from '../../assets/create_image_dall-e.json'
 import captions from '../../assets/captions.json'
+
+const streamPipeline = promisify(pipeline)
 
 export async function POST(request) {
 
@@ -35,6 +42,44 @@ export async function POST(request) {
         }
 
     }
+
+    /*
+    const testFlag = false
+    if(testFlag) {
+
+        const upload_dir = 'uploads'
+
+        const download_files = ['juutaku-madori.jpg', 'juutaku-madori.pdf']
+
+        let downloaded_files = await Promise.all(
+            Array.from(download_files).map(async (file) => {
+
+                let filename = `tmp-${Date.now()}-${file}`
+                let filepath = path.join('public', upload_dir, filename)
+
+                const data_response = await fetch(`http://192.168.1.41/simulator/${file}`)
+
+                try {
+
+                    await streamPipeline(data_response.body, fs.createWriteStream(filepath))
+
+                    return { file, url: `/${upload_dir}/${filename}` }
+
+                } catch(error) {
+
+                    console.log(file, error)
+
+                    return null
+
+                }
+
+            })
+        )
+
+        console.log(downloaded_files)
+
+    }
+    */
 
     const functions = [create_image_dalle]
     
@@ -93,27 +138,129 @@ export async function POST(request) {
 
             const func_args = JSON.parse(func_result.function_call.arguments)
             const image_prompt = func_args.prompt
-            const image_size = func_args.size || '256x256'
+            //const image_size = func_args.size || '256x256'
             const image_count = func_args.image_count && func_args.image_count > 0 ? parseInt(func_args.image_count) : 1
-            const waiting_message = image_count > 1 ? captions.done_here_are_the_images[lang] : captions.done_here_is_the_image[lang] //"Done! Here are the images you requested..." : "Done! Here's the image you requested..."
+            const waiting_message = image_count > 1 ? captions.done_here_are_the_images[lang] : captions.done_here_is_the_image[lang]
 
-            const image = await imageCompletion({ 
-                prompt: image_prompt,
-                n: image_count,
-                size: '256x256'
-            })
+            let image_list = []
 
-            console.log(image.data)
+            try {
 
+                const image = await imageCompletion({ 
+                    prompt: image_prompt,
+                    n: image_count,
+                    size: '256x256'
+                })
+    
+                console.log(image.data)
+
+                image_list = await Promise.all(
+                    Array.from(image.data).map(async (img, index) => {
+                        
+                        const urlObject = new URL(img.url)
+                        const pathname = urlObject.pathname
+                        const parts = pathname.split('/')
+                        const name = parts[parts.length - 1]
+
+                        const filename = `tmp-${Date.now()}-${name}`
+                        let filepath = path.join('public', 'uploads', filename)
+
+                        const data_response = await fetch(img.url)
+
+                        try {
+
+                            await streamPipeline(data_response.body, fs.createWriteStream(filepath))
+
+                            return { 
+                                //file: img.url, 
+                                //name,
+                                //filename,
+                                url: `http://192.168.1.80:4000/uploads/${filename}`,
+                                alt: `${(index + 1)}. ${image_prompt}`
+                            }
+
+                        } catch(error) {
+
+                            console.log(name, error)
+
+                            return null
+
+                        }
+        
+                    })
+                )
+
+                image_list = compact(image_list)
+
+                /*
+                image.data.forEach(async (img) => {
+
+                    const urlObject = new URL(img.url)
+                    const pathname = urlObject.pathname
+                    const parts = pathname.split('/')
+                    const name = parts[parts.length - 1]
+
+                    const filename = `tmp-${Date.now()}-${name}`
+                    let filepath = path.join('public', 'uploads', filename)
+
+                    const data_response = await fetch(img.url)
+
+                    try {
+
+                        await streamPipeline(data_response.body, fs.createWriteStream(filepath))
+
+                        //return { file, url: `/${upload_dir}/${filename}` }
+
+                    } catch(error) {
+
+                        console.log(name, error)
+
+                        //return null
+
+                    }
+
+                })
+
+                image_list = image.data.map((img) => img.url)
+                */
+
+            } catch(error) {
+                console.log("dall-e error", error.name, error.message)
+            }
+
+            let dalle_output = image_list.length > 0 ? { message: waiting_message, images: image_list } : { error: 'Problem creating your image' }
+
+            let dalle_result = { role: 'function', name: func_result.function_call.name, content: JSON.stringify(dalle_output, null, 2) }
+            
+            messages.push(func_result)
+            messages.push(dalle_result)
+
+            try {
+
+                result = await chatCompletion({
+                    messages,
+                    functions
+                })
+        
+                console.log('summary', result)
+                
+            } catch(error) {
+        
+                console.log('summary-error', error.name, error.message)
+        
+            }
+
+            /*
             return new Response(JSON.stringify({
                 result: { 
                     role: 'assistant', 
                     content: waiting_message,
-                    image: image.data.map((img) => img.url)
+                    image: image_list
                 },
             }), {
                 status: 200,
             })
+            */
 
         }
 

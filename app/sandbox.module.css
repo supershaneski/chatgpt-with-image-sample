@@ -255,6 +255,10 @@
 }
 
 @media (prefers-color-scheme: dark) {
+    .header {
+        box-shadow: none;
+        border-bottom: 1px solid #3339;
+    }
     .message {
         background-color: #565656;
     }

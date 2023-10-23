@@ -22,12 +22,8 @@
                 "type": "integer",
                 "description": "The number of images to generate, between 1 and 10",
                 "default": 0
-            },
-            "waiting_message": {
-                "type": "string",
-                "description": "A message to tell the user while the image is being created"
             }
         },
-        "required": ["prompt", "size", "waiting_message", "image_count"]
+        "required": ["prompt", "size", "image_count"]
     }
 }
