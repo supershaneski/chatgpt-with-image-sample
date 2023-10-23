@@ -38,6 +38,8 @@ Only time will tell if my assumptions are correct :P
 
 # DALL·E 3
 
+To control image creation, I added instruction in the ***system prompt*** that the AI will only help in crafting the image prompt and let the user decide which one to create before triggering the image creation function.
+
 Since DALL·E is a separate API, I will be using ***function calling*** to trigger image creation.
 
 ```javascript
