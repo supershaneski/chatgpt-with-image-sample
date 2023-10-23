@@ -118,13 +118,19 @@ Then I send everything back to the Chat completions API for summary. I do this t
 }
 ```
 
-I use [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content and it should show the result with image.
+At first, I used [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content directly but I cannot control how the images are shown specially if there are more than one images. The module allows the use of [plugin](https://github.com/remarkjs/react-markdown#use-a-plugin) but I do not have time to look into it. So, for now, I just made my own quick and dirty text formatting and my own way to show the output images.
 
 <picture>
  <source media="(prefers-color-scheme: dark)" srcset="./docs/dall-e-1.png">
  <source media="(prefers-color-scheme: light)" srcset="./docs/dall-e-2.png">
  <img alt="Dall-E" src="./docs/dall-e-2.png">
 </picture>
+
+---
+
+I use [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content and it should show the result with image.
+
+
 
 
 
