@@ -10,9 +10,9 @@ This sample project integrates OpenAI's [GPT-4 Vision](), with advanced image re
 
 # Motivation
 
-I started this project with the aim of utilizing image analysis with GPT-4 to study how it works and to use it as a springboard for developing other interesting and, perhaps, useful applications. However, at that time, image input functionality was not yet available. To address this limitation, I turned to ml5's ImageClassifier, which proved to be quite effective for basic object analysis. In my opinion, if your goal is to create an application like a "Bring Me" game app, it should suffice.
+I started this project with the aim of utilizing image analysis with GPT-4 to study how it works and to use it as a springboard for developing other interesting and, perhaps, useful applications. However, at that time, image input functionality was not yet available. To address this limitation, I turned to [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier), which proved to be quite effective for basic object analysis. In my opinion, if your goal is to create an application like a ***Bring Me*** game app, it should suffice.
 
-My interest was reignited when OpenAI announced the addition of new features to ChatGPT, including voice and vision capabilities. Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during DevDay.
+My interest was reignited when OpenAI [announced the addition of new features to ChatGPT, including voice and vision capabilities](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak). Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during [DevDay](https://devday.openai.com/).
 
 Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also drew insights from those who had gained access to ChatGPT with image input functionality.
 
@@ -21,7 +21,7 @@ My assumptions led me to the following:
 - The parameter will be in the form of a file object, similar to other APIs.
 - It should support the use of multiple files.
 
-Based on these, calling the Chat Completion API perhaps would look like this:
+So calling the Chat Completion API might look like this:
 ```javascript
 const completion = await openai.chat.completions.create({
     messages: [{ role: "system", content: "You are a helpful assistant." }],
@@ -37,6 +37,10 @@ Only time will tell if my assumptions are correct :P
 
 
 # DALL·E 3
+
+Since OpenAI added [DALL·E 3 image creation in ChatGPT](https://openai.com/blog/dall-e-3-is-now-available-in-chatgpt-plus-and-enterprise), users soon realized that it would have been better if they can use DALL·E 3 and Image Analysis at the same chat session. But the way it is currently implemented in ChatGPT, it seem not possible unless you download and upload the images back and forth from different sessions. As the Japanese would say, めんどくせー.
+
+So for this project, I added DALL·E image creation ＼(^o^)／! However, when I was updating this project, DALL·E 3 API is not yet available 😂.
 
 To control image creation, I added instruction in the ***system prompt*** that the AI will only help in crafting the image prompt and let the user decide which one to create before triggering the image creation function.
 
