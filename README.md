@@ -8,6 +8,17 @@ This sample project integrates OpenAI's [GPT-4 Vision](), with advanced image re
 このサンプルプロジェクトは、OpenAIの[GPT-4 Vision]()（高度な画像認識機能を備えた）と[DALL-E 3]()（最先端の画像生成モデル）を統合しています。この強力な組み合わせにより、画像の作成と分析を同時に行うことが可能になります。
 
 
+# Motivation
+
+Ever since GPT-4 was released, it was anticipated to have image input capabilities and I got curious.
+I started this project to study image analysis together with OpenAI's Chat API.
+But since image input was not yet available at that time so I used ml5's ImageClassifier at first and it was quite good for simple image recognition.
+Then OpenAI announced GPT-4 Vision and my interest peaked once again.
+Even though there is no API available yet, I tried to find out how it is used by ChatGPT.
+Will it be like Dall-E 3, a separate API call or will it be integrated to the Chat API itself.
+
+And so I started updating this project in anticipation of the release of GPT-4 Vision.
+
 # Screenshot
 
 Upload an image or take a photo (for mobile users) and start chatting about it.
