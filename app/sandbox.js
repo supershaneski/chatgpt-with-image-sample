@@ -34,7 +34,7 @@ import useCaption from '../lib/usecaption'
 import captions from '../assets/captions.json'
 //import useAppStore from '../stores/appstore'
 
-import { welcome_greeting, getSimpleId, compact } from '../lib/utils'
+import { welcome_greeting, getSimpleId, compact, formatText } from '../lib/utils'
 
 import classes from './sandbox.module.css'
 
@@ -214,7 +214,8 @@ export default function Sandbox() {
             if(ret_image.length > 0) {
                 newAssistantItem.image = ret_image.map((img) => ({
                     id: getSimpleId(),
-                    src: img 
+                    src: img.url,
+                    alt: img.alt,
                 }))
             }
             
@@ -387,10 +388,14 @@ export default function Sandbox() {
                                             <p className={`${classes.text} ${classes.error}`}>{item.content}</p>
                                         }
                                         {
-                                            item.role !== 'error' &&
+                                            item.role === 'errors' &&
                                             <div className={classes.mark}>
                                                 <Markdown>{item.content}</Markdown>
                                             </div>
+                                        }
+                                        {
+                                            item.role !== 'error' &&
+                                            <p className={classes.text}>{ formatText(item.content, item.image && Array.isArray(item.image) && item.image.length > 0) }</p>
                                         }
                                         {
                                             (item.role === 'assistant' && item.image && Array.isArray(item.image) && item.image.length > 0) &&
@@ -399,7 +404,7 @@ export default function Sandbox() {
                                                 item.image.map((img) => {
                                                     return (
                                                         <a className={classes.linkOut} key={img.id} href={`${img.src}`} target="_blank">
-                                                            <img key={img.src} className={classes.imageOut} src={img.src} />
+                                                            <img key={img.src} className={classes.imageOut} src={img.src} alt={img.alt} />
                                                         </a>
                                                     )
                                                 })

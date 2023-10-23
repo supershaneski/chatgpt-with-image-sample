@@ -246,6 +246,8 @@ export async function POST(request) {
                 })
         
                 console.log('summary', result)
+
+                result.image = image_list
                 
             } catch(error) {
         
