@@ -72,7 +72,54 @@ Since DALL·E is a separate API, I will be using ***function calling*** to trigg
 }
 ```
 
-After getting the result from DALL·E API, I will save the generated image to the server to make it available for image analysis, if needed. Then I send everything back to the Chat completions API for summary. I do this to add the image result in the conversation history.
+Here is the sample output:
+```javascript
+{
+  role: 'assistant',
+  content: null,
+  function_call: {
+    name: 'create_image_dall-e',
+    arguments: '{\n' +
+      '  "prompt": "Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.",\n' +
+      '  "size": "512x512",\n' +
+      '  "image_count": 1\n' +
+      '}'
+  }
+}
+```
+
+We will then call the DALL·E API
+```javascript
+const image = await openai.images.generate({
+  prompt: "Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.",
+  size: "512x512",
+  image_count: 1
+})
+```
+
+After getting the result from DALL·E API, I will save the generated image to the server to make it available for image analysis, if needed. 
+
+Then I send everything back to the Chat completions API for summary. I do this to insert the image result in the conversation history. You will then receive a similar result from below:
+
+```javascript
+{
+  role: 'assistant',
+  content: "Done! Here's the image you requested:\n" +
+    '\n' +
+    '![Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.](http://.../uploads/tmp-1698039103453-img-bPQwcK3fvmgDcZHwQEwdQ9JL.png)\n' +
+    '\n' +
+    "I hope this image matches your vision of a spoon and fork as best friends. Let me know if there's anything else I can assist you with!"
+}
+```
+
+I use [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content and it should show the result with image.
+
+<picture>
+ <source media="(prefers-color-scheme: dark)" srcset="./docs/dall-e-1.png">
+ <source media="(prefers-color-scheme: light)" srcset="./docs/dall-e-2.png">
+ <img alt="Dall-E" src="./docs/dall-e-2.png">
+</picture>
+
 
 
 # GPT-4 Vision
