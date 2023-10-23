@@ -157,6 +157,21 @@ This will tell me which image the query is referring.
 All images in the conversation are stored in the server, including the one created by DALL·E.
 This makes it easier to use them for gpt-4-vision.
 
+The number of images you can upload at one time is controlled by the variable `maxFileUploadCount` in the `next.config.js` file. I was assuming that gpt-4-vision will let multiple image input per call based on the behavior from ChatGPT but I am not sure what is the upper limit.
+
+```javascript
+env: {
+    ...
+    maxFileUploadCount: 10,
+},
+```
+
+<picture>
+ <source media="(prefers-color-scheme: dark)" srcset="./docs/upload1.png">
+ <source media="(prefers-color-scheme: light)" srcset="./docs/upload2.png">
+ <img alt="gpt-4-vision Image Input" src="./docs/upload2.png">
+</picture>
+
 ---
 
 I started this project with the aim of using image analysis with GPT-4, study how it works and use this as spring board for other interesting and perhaps useful apps. However, image input functionality was not yet available at that time. To work around this limitation, I opted for ml5's ImageClassifier, which is quite effective for basic object analysis. If your goal is to create an application like a "Bring Me" game app, it should suffice, in my opinion.
