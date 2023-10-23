@@ -23,6 +23,8 @@ import CloseIcon from '@mui/icons-material/Cancel'
 import SettingsIcon from '@mui/icons-material/Settings'
 import OpenAiIcon from '../components/openailogo'
 
+import Markdown from 'react-markdown'
+
 import CustomTheme from '../components/customtheme'
 import LoadingText from '../components/loadingtext'
 import Loader from '../components/loader'
@@ -386,7 +388,9 @@ export default function Sandbox() {
                                         }
                                         {
                                             item.role !== 'error' &&
-                                            <p className={classes.text}>{item.content}</p>
+                                            <div className={classes.mark}>
+                                                <Markdown>{item.content}</Markdown>
+                                            </div>
                                         }
                                         {
                                             (item.role === 'assistant' && item.image && Array.isArray(item.image) && item.image.length > 0) &&

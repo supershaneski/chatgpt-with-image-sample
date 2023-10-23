@@ -10,14 +10,129 @@ This sample project integrates OpenAI's [GPT-4 Vision](), with advanced image re
 
 # Motivation
 
-Ever since GPT-4 was released, it was anticipated to have image input capabilities and I got curious.
-I started this project to study image analysis together with OpenAI's Chat API.
-But since image input was not yet available at that time so I used ml5's ImageClassifier at first and it was quite good for simple image recognition.
-Then OpenAI announced GPT-4 Vision and my interest peaked once again.
-Even though there is no API available yet, I tried to find out how it is used by ChatGPT.
-Will it be like Dall-E 3, a separate API call or will it be integrated to the Chat API itself.
+I started this project with the aim of utilizing image analysis with GPT-4 to study how it works and to use it as a springboard for developing other interesting and, perhaps, useful applications. However, at that time, image input functionality was not yet available. To address this limitation, I turned to ml5's ImageClassifier, which proved to be quite effective for basic object analysis. In my opinion, if your goal is to create an application like a "Bring Me" game app, it should suffice.
 
-And so I started updating this project in anticipation of the release of GPT-4 Vision.
+My interest was reignited when OpenAI announced the addition of new features to ChatGPT, including voice and vision capabilities. Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during DevDay.
+
+Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also drew insights from those who had gained access to ChatGPT with image input functionality.
+
+My assumptions led me to the following:
+- Image input will be integrated into the Chat Completions API as an additional parameter.
+- The parameter will be in the form of a file object, similar to other APIs.
+- It should support the use of multiple files.
+
+Based on these, calling the Chat Completion API perhaps would look like this:
+```javascript
+const completion = await openai.chat.completions.create({
+    messages: [{ role: "system", content: "You are a helpful assistant." }],
+    files: [
+        fs.createReadStream("image1.png"),
+        fs.createReadStream("image2.png")
+    ],
+    model: "gpt-4-vision",
+  });
+```
+
+Only time will tell if my assumptions are correct :P
+
+
+# DALL·E 3
+
+Since DALL·E is a separate API, I will be using ***function calling*** to trigger image creation.
+
+```javascript
+{
+    "name": "create_image_dall-e",
+    "description": "Create image in DALL-E based prompt provided",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "The prompt based from user input"
+            },
+            "size": {
+                "type": "string",
+                "description": "The size of the image, use the default if the user does not provide any",
+                "default": "256x256",
+                "enum": [
+                    "256x256",
+                    "512x512",
+                    "1024x1024"
+                ]
+            },
+            "image_count": {
+                "type": "integer",
+                "description": "The number of images to generate, between 1 and 10",
+                "default": 0
+            }
+        },
+        "required": ["prompt", "size", "image_count"]
+    }
+}
+```
+
+After getting the result from DALL·E API, I will save the generated image to the server to make it available for image analysis, if needed. Then I send everything back to the Chat completions API for summary. I do this to add the image result in the conversation history.
+
+
+# GPT-4 Vision
+
+There are two ways to send image for analysis: 
+- included when you send your message
+- when your refer an image from the conversation. 
+
+To access the later, I will be using function calling.
+
+```javascript
+{
+    "name": "get_image_for_analysis",
+    "description": "Get image referenced by the user from conversation history",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "image": {
+                "type": "string",
+                "description": "The image referenced by the user, in URL form"
+            },
+            "query": {
+                "type": "string",
+                "description": "Query of the user"
+            }
+        },
+        "required": ["image", "query"]
+    }
+}
+```
+
+This will tell me which image the query is referring. 
+All images in the conversation are stored in the server, including the one created by DALL·E.
+This makes it easier to use them for gpt-4-vision.
+
+---
+
+I started this project with the aim of using image analysis with GPT-4, study how it works and use this as spring board for other interesting and perhaps useful apps. However, image input functionality was not yet available at that time. To work around this limitation, I opted for ml5's ImageClassifier, which is quite effective for basic object analysis. If your goal is to create an application like a "Bring Me" game app, it should suffice, in my opinion.
+
+My interest was rekindled when OpenAI announced that they were adding new features to ChatGPT, including voice and vision capabilities. Nevertheless, there was no specific mention of APIs, although there were rumors that everything would be revealed during DevDay.
+
+Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also benefited from insights shared by those who had gained access to ChatGPT with image input functionality.
+
+My assumptions lead me to the following:
+- image input will be incorporated with the Chat Completions API as another parameter
+- parameter will be file object like in other APIs
+- can allow multiple files
+
+So calling the Chat Completion API perhaps would look like this:
+```javascript
+const completion = await openai.chat.completions.create({
+    messages: [{ role: "system", content: "You are a helpful assistant." }],
+    files: [
+        fs.createReadStream("image1.png"),
+        fs.createReadStream("image2.png")
+    ],
+    model: "gpt-4-vision",
+  });
+```
+
 
 # Screenshot
 
