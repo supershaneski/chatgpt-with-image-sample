@@ -45,6 +45,7 @@ export default function Sandbox() {
 
     const [lang, setCaption] = useCaption(captions)
 
+    const classifyRef = React.useRef()
     const fileRef = React.useRef(null)
     const inputRef = React.useRef(null)
     const messageRef = React.useRef(null)
@@ -62,11 +63,29 @@ export default function Sandbox() {
     
     React.useEffect(() => {
 
-        console.log('max-count', process.env.maxFileUploadCount)
-
         welcome_greeting()
 
+        loadLibrary()
+
     }, [])
+
+    const loadLibrary = async () => {
+
+        setLoading(true)
+        
+        const ml5 = (await import('ml5')).default
+
+        classifyRef.current = ml5.imageClassifier('MobileNet', onModelLoaded)
+
+    }
+
+    const onModelLoaded = () => {
+
+        console.log('model loaded...')
+
+        setLoading(false)
+
+    }
 
     const handleSubmit = async (e) => {
 
@@ -152,11 +171,50 @@ export default function Sandbox() {
 
             console.log("uploaded", uploaded_files)
 
+            ////////////////////////////
+            let processed_images = await Promise.all(
+                Array.from(previewImage).map(async (image) => {
+
+                    let image_result = null
+                    
+                    await classifyRef.current.classify(image._image, (error, results) => {
+
+                        if(error) {
+                          console.log(error.name, error.message)
+                          return
+                        }
+
+                        //console.log(results)
+                        
+                        image_result = results
+
+                    })
+
+                    return {
+                        ...image,
+                        result: image_result
+                    }
+                    
+                })
+            )
+            //console.log("[ML5]", processed_images)
+
+            uploaded_files = uploaded_files.map((file) => {
+                const proc_sel_image = processed_images.find((img) => img.id === file.id)
+                return {
+                    ...file,
+                    result: proc_sel_image ? proc_sel_image.result : null
+                }
+            })
+            ////////////////////////////
+
             newUserItem.image = uploaded_files
 
             setPreviewImage([])
 
         }
+
+        console.log("new-user-item-image", newUserItem.image, (new Date()).toLocaleTimeString())
 
         setMessageItems((prev) => [...prev, ...[newUserItem]])
 
@@ -177,7 +235,8 @@ export default function Sandbox() {
                 body: JSON.stringify({
                     lang,
                     inquiry,
-                    previous
+                    previous,
+                    image: newUserItem.image && Array.isArray(newUserItem.image) && newUserItem.image.length > 0 ? newUserItem.image : [],
                 })
             })
 
@@ -283,7 +342,8 @@ export default function Sandbox() {
                 const newImage = {
                     id: Date.now(),
                     src: image.src,
-                    file: file
+                    file: file,
+                    _image: image,
                 }
 
                 setPreviewImage((prevImgs) => [...prevImgs, ...[newImage]])
@@ -359,7 +419,7 @@ export default function Sandbox() {
                                     {
                                         item.role === 'assistant' &&
                                         <div className={classes.systemIcon}>
-                                            <OpenAiIcon color='#00D8FF' />
+                                            <OpenAiIcon color='#1da5fb' />
                                         </div>
                                     }
                                     {

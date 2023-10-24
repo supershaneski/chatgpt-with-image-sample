@@ -1,0 +1,14 @@
+{
+    "name": "get_image_info",
+    "description": "Get image or images info based on user inquiry",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "inquiry": {
+                "type": "string",
+                "description": "User inquiry about the image or images"
+            }
+        },
+        "required": ["inquiry"]
+    }
+}
