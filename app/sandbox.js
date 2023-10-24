@@ -169,7 +169,7 @@ export default function Sandbox() {
             )
             uploaded_files = compact(uploaded_files)
 
-            console.log("uploaded", uploaded_files)
+            //console.log("uploaded", uploaded_files)
 
             ////////////////////////////
             let processed_images = await Promise.all(
@@ -206,15 +206,24 @@ export default function Sandbox() {
                     result: proc_sel_image ? proc_sel_image.result : null
                 }
             })
+
+            const image_markdown = uploaded_files.map((img) => {
+                return `![${img.name}](${img.url} "${img.id}")\n`
+            })
             ////////////////////////////
 
+            //console.log("uploaded-images", uploaded_files)
+
             newUserItem.image = uploaded_files
+            newUserItem.content = image_markdown + '\n\n' + newUserItem.content
+
+            console.log("user-entry", newUserItem)
 
             setPreviewImage([])
 
         }
 
-        console.log("new-user-item-image", newUserItem.image, (new Date()).toLocaleTimeString())
+        //console.log("new-user-item-image", newUserItem.image, (new Date()).toLocaleTimeString())
 
         setMessageItems((prev) => [...prev, ...[newUserItem]])
 
@@ -463,8 +472,8 @@ export default function Sandbox() {
                                             {
                                                 item.image.map((img) => {
                                                     return (
-                                                        <a className={classes.linkOut} key={img.id} href={`${img.src}`} target="_blank">
-                                                            <img key={img.src} className={classes.imageOut} src={img.src} alt={img.alt} />
+                                                        <a className={classes.link} key={img.id} href={`${img.src}`} target="_blank">
+                                                            <img key={img.src} className={classes.image} src={img.src} alt={img.alt} />
                                                         </a>
                                                     )
                                                 })

@@ -4,7 +4,7 @@ import { promisify } from 'util'
 import { pipeline } from 'stream'
 
 import { chatCompletion, imageCompletion } from '../../services/openai'
-import { trim_array, compact } from '../../lib/utils'
+import { trim_array, compact, parseMarkdownImageLink } from '../../lib/utils'
 
 import create_image_dalle from '../../assets/create_image_dall-e.json'
 import get_image_for_analysis from '../../assets/get_image_for_analysis.json'
@@ -27,10 +27,12 @@ export async function POST(request) {
     let prev_data = trim_array(previous, 20)
 
     const today = new Date()
+    console.log('[TODAY]', today)
 
     /////////////////////////////////////////////////
     // this code block is for temporary image analysis
-    if(image && Array.isArray(image) && image.length > 0) {
+    const bypassFlag = false
+    if(!bypassFlag && image && Array.isArray(image) && image.length > 0) {
     
         console.log("images", image)
 
@@ -123,7 +125,7 @@ export async function POST(request) {
 
         console.log((new Date()).toLocaleTimeString())
 
-        const chance = Math.round(10 * Math.random())
+        const chance = 4 // Math.round(10 * Math.random())
 
         if(chance > 5) {
 
@@ -201,6 +203,8 @@ export async function POST(request) {
 
     try {
 
+        console.log("function calling...")
+
         result = await chatCompletion({
             messages,
             functions
@@ -210,7 +214,7 @@ export async function POST(request) {
         
     } catch(error) {
 
-        console.log('[end-point]', error)
+        console.log('[function call error]', error)
 
     }
 
@@ -228,9 +232,92 @@ export async function POST(request) {
 
         if(func_result.function_call.name === 'create_image_dall-e') {
 
+            /*
+            const flag_test = true
+            if(flag_test) {
+
+                return new Response('Bad function call', {
+                    status: 400,
+                })
+        
+            }
+            */
+
             console.log("DALL-E ARGS", func_result.function_call.arguments)
 
             const func_args = JSON.parse(func_result.function_call.arguments)
+
+            /////////
+            const image_items = func_args.items
+
+            let image_result = await Promise.all(
+                Array.from(image_items).map(async (img) => {
+
+                    const image_prompt = img.prompt
+                    const image_size = '256x256' //img.size || '256x256'
+                    const image_count = 1 //img.image_count && img.image_count > 0 ? parseInt(img.image_count) : 1
+                    
+                    try {
+
+                        const dalle_image = await imageCompletion({ 
+                            prompt: image_prompt,
+                            n: image_count,
+                            size: image_size
+                        })
+
+                        return {
+                            prompt: image_prompt,
+                            url: dalle_image.data[0].url // for test
+                        }
+
+                    } catch(error) {
+
+                        console.log('dall-e-error', error.name, error.message)
+                        
+                        return null
+
+                    }
+
+                })
+            )
+            image_result = compact(image_result)
+            
+            let image_list = await Promise.all(
+                Array.from(image_result).map(async (img) => {
+                    
+                    const urlObject = new URL(img.url)
+                    const pathname = urlObject.pathname
+                    const parts = pathname.split('/')
+                    const name = parts[parts.length - 1]
+
+                    const filename = `tmp-${Date.now()}-${name}`
+                    let filepath = path.join('public', 'uploads', filename)
+
+                    const data_response = await fetch(img.url)
+
+                    try {
+
+                        await streamPipeline(data_response.body, fs.createWriteStream(filepath))
+
+                        return { 
+                            url: `/uploads/${filename}`,
+                            alt: `${img.prompt}`
+                        }
+
+                    } catch(error) {
+
+                        console.log(name, error)
+
+                        return null
+
+                    }
+    
+                })
+            )
+            image_list = compact(image_list)
+
+            ////////
+            /*
             const image_prompt = func_args.prompt
             //const image_size = func_args.size || '256x256'
             const image_count = func_args.image_count && func_args.image_count > 0 ? parseInt(func_args.image_count) : 1
@@ -266,9 +353,6 @@ export async function POST(request) {
                             await streamPipeline(data_response.body, fs.createWriteStream(filepath))
 
                             return { 
-                                //file: img.url, 
-                                //name,
-                                //filename,
                                 _url: `http://192.168.1.80:4000/uploads/${filename}`,
                                 url: `/uploads/${filename}`,
                                 alt: `${(index + 1)}. ${image_prompt}`
@@ -287,43 +371,15 @@ export async function POST(request) {
 
                 image_list = compact(image_list)
 
-                /*
-                image.data.forEach(async (img) => {
-
-                    const urlObject = new URL(img.url)
-                    const pathname = urlObject.pathname
-                    const parts = pathname.split('/')
-                    const name = parts[parts.length - 1]
-
-                    const filename = `tmp-${Date.now()}-${name}`
-                    let filepath = path.join('public', 'uploads', filename)
-
-                    const data_response = await fetch(img.url)
-
-                    try {
-
-                        await streamPipeline(data_response.body, fs.createWriteStream(filepath))
-
-                        //return { file, url: `/${upload_dir}/${filename}` }
-
-                    } catch(error) {
-
-                        console.log(name, error)
-
-                        //return null
-
-                    }
-
-                })
-
-                image_list = image.data.map((img) => img.url)
-                */
-
             } catch(error) {
                 console.log("dall-e error", error.name, error.message)
             }
+            */
 
-            let dalle_output = image_list.length > 0 ? { message: waiting_message, images: image_list } : { error: 'Problem creating your image' }
+            let dalle_output = image_list.length > 0 ? { 
+                message: image_list.length > 1 ? captions.done_here_are_the_images[lang] : captions.done_here_is_the_image[lang], 
+                images: image_list 
+            } : { error: 'Problem creating your image' }
 
             let dalle_result = { role: 'function', name: func_result.function_call.name, content: JSON.stringify(dalle_output, null, 2) }
             
@@ -367,6 +423,34 @@ export async function POST(request) {
 
             // Here is a call for gpt-4-vision
 
+        }
+
+    } else {
+
+        /*
+        { 
+            url: `/uploads/${filename}`,
+            alt: `${img.prompt}`
+        }
+        '1. ![440px-Mallard_ducks_pair.jpeg](/uploads/tmp169813146354732028_440px-Mallard_ducks_pair.jpeg "1698131440543")\n' +
+        '1. ![textA](urlB "1698131440543")\n' +
+        */
+
+        let tmp_content = result.content.split('\n')
+        let tmp_images = tmp_content.filter((tmp) => {
+            return tmp.indexOf('![') >= 0
+        }).map((tmp) => {
+            const tmp_data = parseMarkdownImageLink(tmp)
+            return {
+                alt: tmp_data[0],
+                url: tmp_data[1].split(' ')[0]
+            }
+        })
+
+        console.log(tmp_images)
+
+        if(tmp_images.length > 0) {
+            result.image = tmp_images
         }
 
     }
