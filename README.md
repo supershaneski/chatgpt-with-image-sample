@@ -10,18 +10,18 @@ This sample project integrates OpenAI's [GPT-4 Vision](), with advanced image re
 
 # Motivation
 
-I started this project with the aim of utilizing image analysis with GPT-4 to study how it works and to use it as a springboard for developing other interesting and, perhaps, useful applications. However, at that time, image input functionality was not yet available. To address this limitation, I turned to [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier), which proved to be quite effective for basic object analysis. In my opinion, if your goal is to create an application like a ***Bring Me*** game app, it should suffice.
+I started this project with the aim of using image analysis with GPT-4. However, at that time, image input functionality was not yet available. In lieu of the absence of image input in Chat API, I turned to [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier), which proved to be quite effective for basic object analysis. In my opinion, if your goal is to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should suffice.
 
 My interest was reignited when OpenAI [announced the addition of new features to ChatGPT, including voice and vision capabilities](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak). Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during [DevDay](https://devday.openai.com/).
 
 Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also drew insights from those who had gained access to ChatGPT with image input functionality.
 
 My assumptions led me to the following:
-- Image input will be integrated into the Chat Completions API as an additional parameter.
+- Image input will be integrated into the Chat completions API as an additional parameter.
 - The parameter will be in the form of a file object, similar to other APIs.
 - It should support the use of multiple files.
 
-So calling the Chat Completion API might look like this:
+So calling the Chat completion API might look like this:
 ```javascript
 const completion = await openai.chat.completions.create({
     messages: [{ role: "system", content: "You are a helpful assistant." }],
@@ -191,7 +191,7 @@ My interest was rekindled when OpenAI announced that they were adding new featur
 Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also benefited from insights shared by those who had gained access to ChatGPT with image input functionality.
 
 My assumptions lead me to the following:
-- image input will be incorporated with the Chat Completions API as another parameter
+- image input will be incorporated with the Chat completions API as another parameter
 - parameter will be file object like in other APIs
 - can allow multiple files
 
@@ -218,6 +218,54 @@ Upload an image or take a photo (for mobile users) and start chatting about it.
  <img alt="Screenshot" src="./docs/screenshot2.png">
 </picture>
 
+
+# ML5 Image Classifier
+
+Before updating the app to incorporate `gpt-4-vision` for image analysis, I was using [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier).
+
+To use it, you must first load the model. Here, I'm using `MobileNet`.
+```javascript
+const classifier = ml5.imageClassifier('MobileNet', modelLoaded);
+
+function modelLoaded() {
+  console.log('Model Loaded!');
+}
+```
+
+There are other models available depending on your specific needs, such as `Darknet` and `DoodleNet`. Alternatively, you can load the model from a local directory. Please refer to the [usage section](https://learn.ml5js.org/#/reference/image-classifier?id=usage) for more information.
+
+Once the model is loaded, you can use it to your heart's content since it's free!
+```javascript
+classifier.classify(document.getElementById('image'), (err, results) => {
+  console.log(results);
+});
+```
+
+Here's an example of a typical output
+```javascript
+const image_result = [
+    {
+        "label": "banana",
+        "confidence": 0.9664063453674316
+    },
+    {
+        "label": "slug",
+        "confidence": 0.0016748382477089763
+    },
+    {
+        "label": "zucchini, courgette",
+        "confidence": 0.0012184377992525697
+    }
+]
+```
+
+To integrate this with OpenAI's Chat Completion API, you can either append this to the system prompt or use function calling and insert it as a result of the function.
+```javascript
+message.push({ role: 'assistant', content: null, function_call: { name: 'analyse_image', arguments: '{\n  "inquiry": "fruit"\n}'}})
+message.push({ role: 'function', name: 'analyse_image', content: JSON.stringify({ result: image_result }) })
+```
+
+Occasionally, it produces unexpected results, which can add an element of surprise and make a game app more engaging.
 
 
 # Setup
