@@ -1,18 +1,22 @@
 {
     "name": "get_image_for_analysis",
-    "description": "Get image referenced by the user from conversation history",
+    "description": "Get image data referenced by the user from conversation history",
     "parameters": {
         "type": "object",
         "properties": {
-            "image": {
-                "type": "string",
-                "description": "The image referenced by the user, in URL form"
+            "images": {
+                "type": "array",
+                "description": "An array of the image data referenced by the user, in URL form",
+                "items": {
+                    "type": "string",
+                    "description": "Image data represented by a relative URL"
+                }
             },
             "query": {
                 "type": "string",
                 "description": "Query of the user"
             }
         },
-        "required": ["image", "query"]
+        "required": ["images", "query"]
     }
 }

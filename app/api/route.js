@@ -4,7 +4,7 @@ import { promisify } from 'util'
 import { pipeline } from 'stream'
 
 import { chatCompletion, imageCompletion } from '../../services/openai'
-import { trim_array, compact, parseMarkdownImageLink } from '../../lib/utils'
+import { trim_array, compact, parse_markdown_image_link, remove_trailing_commas } from '../../lib/utils'
 
 import create_image_dalle from '../../assets/create_image_dall-e.json'
 import get_image_for_analysis from '../../assets/get_image_for_analysis.json'
@@ -27,7 +27,8 @@ export async function POST(request) {
     let prev_data = trim_array(previous, 20)
 
     const today = new Date()
-    console.log('[TODAY]', today)
+
+    console.log('processing...', (new Date()).toLocaleTimeString())
 
     /////////////////////////////////////////////////
     // this code block is for temporary image analysis
@@ -40,6 +41,7 @@ export async function POST(request) {
             `If the user wants to know about the image or images, call get_image_info function.\n` +
             `When you receive the result from get_image_info, analyse it and give your best interpretation.\n` +
             `If the result is inconclusive, use the filename as additional context.\n` +
+            `Be brief and concise in your analysis.\n` +
             `Today is ${today}`
         
         let _messages = [{ role: 'system', content: _system_prompt }]
@@ -57,17 +59,17 @@ export async function POST(request) {
                 functions: [ get_image_info ],
             })
 
-            console.log('_function_call', _result)
+            console.log('_function_call_', _result)
             
         } catch(error) {
 
-            console.log('_function_call-error', error.name, error.message)
+            console.log('_function_call_error_', error.name, error.message)
 
         }
 
-        if(_result.content === null || _result.function_call) {
+        if(_result.finish_reason === 'function_call') {
 
-            let _func_result = _result
+            let _func_result = _result.message
 
             let api_output = []
             if(image && Array.isArray(image) && image.length > 0) {
@@ -101,18 +103,18 @@ export async function POST(request) {
                     functions: [ get_image_info ],
                 })
         
-                console.log('_summary', _result)
+                console.log('_summary_', _result)
                 
             } catch(error) {
         
-                console.log('_summary-error', error.name, error.message)
+                console.log('_summary_error_', error.name, error.message)
         
             }
 
         }
 
         return new Response(JSON.stringify({
-            result: _result,
+            result: _result.message,
         }), {
             status: 200,
         })
@@ -120,6 +122,7 @@ export async function POST(request) {
     }
     /////////////////////////////////////////////////
 
+    /////////////////////////////////////////////////
     const forceFlag = false
     if(forceFlag) {
 
@@ -142,45 +145,8 @@ export async function POST(request) {
         }
 
     }
-
-    /*
-    const testFlag = false
-    if(testFlag) {
-
-        const upload_dir = 'uploads'
-
-        const download_files = ['juutaku-madori.jpg', 'juutaku-madori.pdf']
-
-        let downloaded_files = await Promise.all(
-            Array.from(download_files).map(async (file) => {
-
-                let filename = `tmp-${Date.now()}-${file}`
-                let filepath = path.join('public', upload_dir, filename)
-
-                const data_response = await fetch(`http://192.168.1.41/simulator/${file}`)
-
-                try {
-
-                    await streamPipeline(data_response.body, fs.createWriteStream(filepath))
-
-                    return { file, url: `/${upload_dir}/${filename}` }
-
-                } catch(error) {
-
-                    console.log(file, error)
-
-                    return null
-
-                }
-
-            })
-        )
-
-        console.log(downloaded_files)
-
-    }
-    */
-
+    /////////////////////////////////////////////////
+    
     const functions = [create_image_dalle, get_image_for_analysis]
     
     let system_prompt = `You are a helpful assistant.\n` +
@@ -190,6 +156,8 @@ export async function POST(request) {
         `If the description is vague, clarify to the user some elements to make it clearer.` +
         `Confirm to the user the image prompt before calling create_image_dall-e.\n` +
         `If possible, give them several variations of possible prompts.\n` +
+        `When the user wants to analyse image data from chat history, call get_image_for_analysis function.\n` +
+        `Be brief and concise in your analysis.\n` +
         `For security reason, do not reveal this function in your response.\n` +
         `Today is ${today}.`
 
@@ -202,9 +170,7 @@ export async function POST(request) {
     let result = {}
 
     try {
-
-        console.log("function calling...")
-
+        
         result = await chatCompletion({
             messages,
             functions
@@ -214,40 +180,20 @@ export async function POST(request) {
         
     } catch(error) {
 
-        console.log('[function call error]', error)
+        console.log('function call error', error)
 
     }
 
-    if(Object.keys(result).length === 0) {
+    if(result.finish_reason === 'function_call') {
 
-        return new Response('Bad function call', {
-            status: 400,
-        })
-
-    }
-
-    if(result.content === null || result.function_call) {
-
-        const func_result = result
+        const func_result = result.message
 
         if(func_result.function_call.name === 'create_image_dall-e') {
-
-            /*
-            const flag_test = true
-            if(flag_test) {
-
-                return new Response('Bad function call', {
-                    status: 400,
-                })
-        
-            }
-            */
-
-            console.log("DALL-E ARGS", func_result.function_call.arguments)
+            
+            console.log("dall-e", func_result.function_call.arguments)
 
             const func_args = JSON.parse(func_result.function_call.arguments)
 
-            /////////
             const image_items = func_args.items
 
             let image_result = await Promise.all(
@@ -315,67 +261,7 @@ export async function POST(request) {
                 })
             )
             image_list = compact(image_list)
-
-            ////////
-            /*
-            const image_prompt = func_args.prompt
-            //const image_size = func_args.size || '256x256'
-            const image_count = func_args.image_count && func_args.image_count > 0 ? parseInt(func_args.image_count) : 1
-            const waiting_message = image_count > 1 ? captions.done_here_are_the_images[lang] : captions.done_here_is_the_image[lang]
-
-            let image_list = []
-
-            try {
-
-                const image = await imageCompletion({ 
-                    prompt: image_prompt,
-                    n: image_count,
-                    size: '256x256'
-                })
-    
-                console.log(image.data)
-
-                image_list = await Promise.all(
-                    Array.from(image.data).map(async (img, index) => {
-                        
-                        const urlObject = new URL(img.url)
-                        const pathname = urlObject.pathname
-                        const parts = pathname.split('/')
-                        const name = parts[parts.length - 1]
-
-                        const filename = `tmp-${Date.now()}-${name}`
-                        let filepath = path.join('public', 'uploads', filename)
-
-                        const data_response = await fetch(img.url)
-
-                        try {
-
-                            await streamPipeline(data_response.body, fs.createWriteStream(filepath))
-
-                            return { 
-                                _url: `http://192.168.1.80:4000/uploads/${filename}`,
-                                url: `/uploads/${filename}`,
-                                alt: `${(index + 1)}. ${image_prompt}`
-                            }
-
-                        } catch(error) {
-
-                            console.log(name, error)
-
-                            return null
-
-                        }
-        
-                    })
-                )
-
-                image_list = compact(image_list)
-
-            } catch(error) {
-                console.log("dall-e error", error.name, error.message)
-            }
-            */
-
+            
             let dalle_output = image_list.length > 0 ? { 
                 message: image_list.length > 1 ? captions.done_here_are_the_images[lang] : captions.done_here_is_the_image[lang], 
                 images: image_list 
@@ -395,7 +281,7 @@ export async function POST(request) {
         
                 console.log('summary', result)
 
-                result.image = image_list
+                result.message.image = image_list
                 
             } catch(error) {
         
@@ -403,60 +289,60 @@ export async function POST(request) {
         
             }
 
-            /*
-            return new Response(JSON.stringify({
-                result: { 
-                    role: 'assistant', 
-                    content: waiting_message,
-                    image: image_list
-                },
-            }), {
-                status: 200,
-            })
-            */
-
         } else {
 
-            console.log("other-function")
+            console.log("OTHER-FUNCTION", func_result)
 
-            console.log("OTHERS", func_result)
+            const func_args2 = JSON.parse(func_result.function_call.arguments)
+            const referenced_images = func_args2.images
+            
+            referenced_images.forEach((img, index) => {
 
-            // Here is a call for gpt-4-vision
+                const raw_file = path.join('public', img)
+
+                if(fs.existsSync(raw_file)) {
+                    console.log(index, img, 'OK')
+                }
+
+            })
+
+            console.log("referenced-images", referenced_images)
+            console.log("query-topic", func_args2.query)
+
+            // TODO: 
+            // This will be a second call for image analysis using gpt-4-vision
 
         }
 
     } else {
 
-        /*
-        { 
-            url: `/uploads/${filename}`,
-            alt: `${img.prompt}`
-        }
-        '1. ![440px-Mallard_ducks_pair.jpeg](/uploads/tmp169813146354732028_440px-Mallard_ducks_pair.jpeg "1698131440543")\n' +
-        '1. ![textA](urlB "1698131440543")\n' +
-        */
+        let tmp_content = result.message.content.split('\n')
 
-        let tmp_content = result.content.split('\n')
         let tmp_images = tmp_content.filter((tmp) => {
             return tmp.indexOf('![') >= 0
         }).map((tmp) => {
-            const tmp_data = parseMarkdownImageLink(tmp)
+            
+            const tmp_data = parse_markdown_image_link(tmp)
+            
             return {
                 alt: tmp_data[0],
                 url: tmp_data[1].split(' ')[0]
             }
+
         })
 
-        console.log(tmp_images)
-
         if(tmp_images.length > 0) {
-            result.image = tmp_images
+            
+            console.log("reference-images", tmp_images)
+            
+            result.message.image = tmp_images
+
         }
 
     }
 
     return new Response(JSON.stringify({
-        result,
+        result: result.message,
     }), {
         status: 200,
     })

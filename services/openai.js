@@ -1,16 +1,9 @@
-//import { Configuration, OpenAIApi } from 'openai'
 import OpenAI from 'openai'
 
-/*
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-})
-
-const openai = new OpenAIApi(configuration)
-*/
-
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY,
+    maxRetries: 2,
+    timeout: 20 * 1000 // 20s
 })
 
 export async function imageCompletion({
@@ -56,13 +49,7 @@ export async function chatCompletion({
 
         const result = await openai.chat.completions.create(options)
 
-        if (!result.choices[0].message) {
-            
-            throw new Error("No return error from chat")
-
-        }
-
-        return result.choices[0].message
+        return result.choices[0]
         
     } catch(error) {
 

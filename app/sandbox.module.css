@@ -1,10 +1,4 @@
 .container {
-    /*position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    */
     position: relative;
     height: 100vh;
 }
@@ -93,8 +87,6 @@
     background-size: calc(10px * 2) calc(10px * 2);
     position: relative;
     object-fit: contain;
-    /*margin-left: 2px;
-    margin-bottom: 2px;*/
     z-index: 1;
     display: block;
 }
@@ -118,11 +110,6 @@
 
 .input {
     background-color: var(--color-background);
-    /*background-color: chartreuse;*/
-    /*position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;*/
     position: fixed;
     left: 0;
     bottom: 0;
@@ -133,7 +120,6 @@
 }
 .retry {
     position: relative;
-    /*margin-left: 1rem;*/
     z-index: 1;
     overflow: hidden;
     transition: width 0.2s ease-in;
@@ -148,7 +134,6 @@
     border-radius: 50%;
 }
 .chat {
-    /*border: 1px solid #999;*/
     flex-grow: 1;
     position: relative;
     border-radius: 6px;
@@ -201,38 +186,15 @@
     flex-wrap: wrap;
 }
 .preview {
-    /*background:
-    repeating-linear-gradient(45deg, 
-      black 0, black 6px, 
-      white 6px, white 12px),
-    repeating-linear-gradient(45deg, 
-      white 0, white 6px, 
-      black 6px, black 12px);
-    background-position: 0 0, 6px 6px;*/
-    /*background-size: 24px 24px;
-    background-image:
-    linear-gradient(90deg, black 50%, white 50%),
-    linear-gradient(180deg, green 50%, red 50%);*/
     background-color: #fafafa;
     background-image: linear-gradient(45deg, #9995 25%, transparent 25%, transparent 75%, #9995 75%), linear-gradient(45deg, #9995 25%, transparent 25%, transparent 75%, #9995 75%);
     background-position: 0 0, 10px 10px;
     background-size: calc(10px * 2) calc(10px * 2);
     position: relative;
-    /*width: 356px;
-    height: 200px;*/
-    /*width: 30%;
-    height: 200px;*/
-    /*margin-top: 1rem;*/
     display: inline-block;
     margin-left: 5px;
     margin-bottom: 5px;
 }
-/*.preview:first-child {
-    margin-left: 1rem;
-}*/
-/*.preview + .preview {
-    margin-left: 5px;
-}*/
 .previewImage {
     position: relative;
     width: 100%;
@@ -268,7 +230,7 @@
     border: 1px solid #00D8FF;
 }
 
-.assistant .text {
+.assistant .text, .restartIcon {
     color: #fff;
 }
 

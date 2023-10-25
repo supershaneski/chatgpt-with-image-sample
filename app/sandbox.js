@@ -9,7 +9,7 @@ import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
-import Fab from '@mui/material/Fab'
+//import Fab from '@mui/material/Fab'
 //import LinearProgress from '@mui/material/LinearProgress'
 
 import RestartIcon from '@mui/icons-material/RestartAlt'
@@ -34,10 +34,24 @@ import useCaption from '../lib/usecaption'
 import captions from '../assets/captions.json'
 //import useAppStore from '../stores/appstore'
 
-import { welcome_greeting, getSimpleId, compact, formatText } from '../lib/utils'
+import { welcome_greeting, getSimpleId, compact, formatTextQuickDirty } from '../lib/utils'
 
 import classes from './sandbox.module.css'
 
+const DataFlux = () => {
+    const [time, setTime] = React.useState('')
+    React.useEffect(() => {
+        const timer = setInterval(() => {
+            setTime((new Date()).toLocaleTimeString())
+        }, 1000)
+        return () => {
+            clearInterval(timer)
+        }
+    }, [])
+    return (
+        <span style={{fontSize: '.8rem', marginLeft: '1rem', color: '#8889' }}>{time}</span>
+    )
+}
 
 export default function Sandbox() {
 
@@ -80,17 +94,13 @@ export default function Sandbox() {
     }
 
     const onModelLoaded = () => {
-
-        console.log('model loaded...')
-
+        
         setLoading(false)
 
     }
 
     const handleSubmit = async (e) => {
 
-        console.log("submit query...", (new Date()).toLocaleTimeString())
-        
         clearTimeout(timerRef.current)
 
         e.preventDefault()
@@ -114,7 +124,6 @@ export default function Sandbox() {
             role: 'user',
             content: inquiry,
             type: 'text',
-            //image: [],
             datetime: (new Date()).toISOString(),
         }
 
@@ -169,8 +178,6 @@ export default function Sandbox() {
             )
             uploaded_files = compact(uploaded_files)
 
-            //console.log("uploaded", uploaded_files)
-
             ////////////////////////////
             let processed_images = await Promise.all(
                 Array.from(previewImage).map(async (image) => {
@@ -184,8 +191,6 @@ export default function Sandbox() {
                           return
                         }
 
-                        //console.log(results)
-                        
                         image_result = results
 
                     })
@@ -197,8 +202,7 @@ export default function Sandbox() {
                     
                 })
             )
-            //console.log("[ML5]", processed_images)
-
+            
             uploaded_files = uploaded_files.map((file) => {
                 const proc_sel_image = processed_images.find((img) => img.id === file.id)
                 return {
@@ -212,8 +216,6 @@ export default function Sandbox() {
             })
             ////////////////////////////
 
-            //console.log("uploaded-images", uploaded_files)
-
             newUserItem.image = uploaded_files
             newUserItem.content = image_markdown + '\n\n' + newUserItem.content
 
@@ -223,14 +225,10 @@ export default function Sandbox() {
 
         }
 
-        //console.log("new-user-item-image", newUserItem.image, (new Date()).toLocaleTimeString())
-
         setMessageItems((prev) => [...prev, ...[newUserItem]])
 
         setInputText('')
-        
         inputRef.current.blur()
-
         resetScroll()
 
         try {
@@ -254,22 +252,21 @@ export default function Sandbox() {
             }
 
             const ret = await response.json()
-
             
-
             console.log("received response...", (new Date()).toLocaleTimeString())
             console.log(ret)
 
             let text = ret.result.content || setCaption('unexpected_error')
-            let ret_image = []
+            
+            
+            /*let ret_image = []
 
             if(ret.result.image && Array.isArray(ret.result.image) && ret.result.image.length > 0) {
 
                 ret_image = ret.result.image
 
-            }
+            }*/
             
-
             let newAssistantItem = {
                 id: getSimpleId(),
                 gid: groupId,
@@ -279,6 +276,17 @@ export default function Sandbox() {
                 datetime: (new Date()).toISOString(),
             }
 
+            if(ret.result.image && Array.isArray(ret.result.image) && ret.result.image.length > 0) {
+
+                newAssistantItem.image = ret.result.image.map((img) => ({
+                    id: getSimpleId(),
+                    src: img.url,
+                    alt: img.alt,
+                }))
+
+            }
+
+            /*
             if(ret_image.length > 0) {
                 newAssistantItem.image = ret_image.map((img) => ({
                     id: getSimpleId(),
@@ -286,12 +294,13 @@ export default function Sandbox() {
                     alt: img.alt,
                 }))
             }
+            */
             
             setMessageItems((prev) => [...prev, ...[newAssistantItem]])
             
         } catch(error) {
             
-            console.log(error)
+            console.log(error.name, error.message)
 
             let newErrorItem = {
                 id: getSimpleId(),
@@ -315,13 +324,19 @@ export default function Sandbox() {
     }
 
     const resetScroll = (flag = false) => {
+
         const flagRefocus = flag
+
         setTimeout(() => {
+            
             messageRef.current.scrollTop = messageRef.current.scrollHeight
+            
             if(flagRefocus) {
                 inputRef.current.focus()
             }
+
         }, 300)
+
     }
 
     const handleImage = () => {
@@ -336,8 +351,7 @@ export default function Sandbox() {
         setProcessing(true)
 
         const file = e.target.files[0]
-
-
+        
         const reader = new FileReader()
 
         reader.onload = function() {
@@ -345,8 +359,6 @@ export default function Sandbox() {
             const image = new Image()
 
             image.onload = function() {
-
-                //setPreviewImage((prevImgs) => [...prevImgs, ...[image.src]])
 
                 const newImage = {
                     id: Date.now(),
@@ -357,23 +369,27 @@ export default function Sandbox() {
 
                 setPreviewImage((prevImgs) => [...prevImgs, ...[newImage]])
 
-                /*setPreviewData({
-                    lastModified: file.lastModified,
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                })*/
-
                 setProcessing(false)
 
             }
 
             image.onerror = function(error) {
-                console.log('error', error)
+                
+                console.log('Load image', error)
+
                 setProcessing(false)
+
             }
 
             image.src = reader.result
+
+        }
+
+        reader.onerror = function() {
+
+            console.log('Error reading file')
+
+            setProcessing(false)
 
         }
 
@@ -381,7 +397,7 @@ export default function Sandbox() {
 
     }
 
-    const handleDelete = (gid) => {
+    const handleDeleteMessage = (gid) => {
         
         setMessageItems((prev) => prev.filter((item) => item.gid !== gid))
 
@@ -408,8 +424,11 @@ export default function Sandbox() {
     }
 
     const handleClear = () => {
+        
         clearTimeout(timerRef.current)
+        
         setInputText('')
+
     }
 
     const classBorderline = inputFocus ? classes.selected : classes.default
@@ -418,7 +437,7 @@ export default function Sandbox() {
         <div className={classes.container}>
             <div className={classes.main}>
                 <div className={classes.header}>
-                    <h4 className={classes.title}>{process.env.siteTitle}</h4>
+                    <h4 className={classes.title}>{process.env.siteTitle}</h4><DataFlux />
                 </div>
                 <div ref={messageRef} className={classes.messageList}>
                     {
@@ -428,7 +447,7 @@ export default function Sandbox() {
                                     {
                                         item.role === 'assistant' &&
                                         <div className={classes.systemIcon}>
-                                            <OpenAiIcon color='#1da5fb' />
+                                            <OpenAiIcon />
                                         </div>
                                     }
                                     {
@@ -464,7 +483,7 @@ export default function Sandbox() {
                                         }
                                         {
                                             item.role !== 'error' &&
-                                            <p className={classes.text}>{ formatText(item.content, item.image && Array.isArray(item.image) && item.image.length > 0) }</p>
+                                            <p className={classes.text}>{ formatTextQuickDirty(item.content, item.image && Array.isArray(item.image) && item.image.length > 0) }</p>
                                         }
                                         {
                                             (item.role === 'assistant' && item.image && Array.isArray(item.image) && item.image.length > 0) &&
@@ -482,7 +501,7 @@ export default function Sandbox() {
                                         }
                                         <div className={item.role !== 'user' ? classes.close2 : classes.close}>
                                             <CustomTheme>
-                                                <IconButton disabled={isProcessing} onClick={() => handleDelete(item.gid)}>
+                                                <IconButton disabled={isProcessing} onClick={() => handleDeleteMessage(item.gid)}>
                                                     <CloseIcon className={classes.closeIcon} sx={{fontSize: '1.2rem'}} />
                                                 </IconButton>
                                             </CustomTheme>
@@ -518,7 +537,7 @@ export default function Sandbox() {
                         !inputFocus && messageItems.length > 0 &&
                             <div className={classes.roundButton}>
                                 <IconButton size="large" onClick={handleReset}>
-                                    <RestartIcon sx={{color: '#fff'}} fontSize="inherit" />
+                                    <RestartIcon className={classes.restartIcon} fontSize="inherit" />
                                 </IconButton>
                             </div>
                         }
