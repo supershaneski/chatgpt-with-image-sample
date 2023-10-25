@@ -306,11 +306,36 @@ export async function POST(request) {
 
             })
 
+
+            let api_result = { role: 'function', name: func_result.function_call.name, content: JSON.stringify({
+                images: referenced_images
+            }, null, 2) }
+            
             console.log("referenced-images", referenced_images)
             console.log("query-topic", func_args2.query)
 
             // TODO: 
             // This will be a second call for image analysis using gpt-4-vision
+
+            messages.push(func_result)
+            messages.push(api_result)
+
+            try {
+
+                result = await chatCompletion({
+                    messages,
+                    functions
+                })
+        
+                console.log('summary2', result)
+    
+                //result.message.image = image_list
+                
+            } catch(error) {
+        
+                console.log('summary2-error', error.name, error.message)
+        
+            }
 
         }
 
