@@ -1,84 +1,90 @@
 chatgpt-with-image-sample
 ======
 
-This sample project integrates OpenAI's [GPT-4 Vision](), with advanced image recognition capabilities, and [DALL-E 3](), the state-of-the-art image generation model. This powerful combination allows for simultaneous image creation and analysis.
+This sample project integrates OpenAI's [GPT-4 Vision](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak), with advanced image recognition capabilities, and [DALL·E 3](https://openai.com/dall-e-3), the state-of-the-art image generation model, with the [Chat completions API](https://platform.openai.com/docs/guides/gpt/chat-completions-api). This powerful combination allows for simultaneous image creation and analysis.
 
 ---
 
-このサンプルプロジェクトは、OpenAIの[GPT-4 Vision]()（高度な画像認識機能を備えた）と[DALL-E 3]()（最先端の画像生成モデル）を統合しています。この強力な組み合わせにより、画像の作成と分析を同時に行うことが可能になります。
+このサンプルプロジェクトは、高度な画像認識機能を持つOpenAIの[GPT-4 Vision](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak)と、最先端の画像生成モデルである[DALL·E 3](https://openai.com/dall-e-3)、そして[Chat completions API](https://platform.openai.com/docs/guides/gpt/chat-completions-api)を統合しています。この強力な組み合わせにより、画像の作成と分析を同時に行うことが可能になります。
 
 
 # Motivation
 
-I started this project with the aim of using image analysis with GPT-4. However, at that time, image input functionality was not yet available. In lieu of the absence of image input in Chat API, I turned to [ml5's ImageClassifier](https://learn.ml5js.org/#/reference/image-classifier), which proved to be quite effective for basic object analysis. In my opinion, if your goal is to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should suffice.
+I started this project with the aim of using image analysis with GPT-4. However, at that time, image input was not yet available. In lieu of image input in Chat API, I used [ml5's ImageClassifier](#ml5-image-classifier) instead, which proved to be quite effective for basic object analysis. In my opinion, if your goal is just to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should suffice.
 
-My interest was reignited when OpenAI [announced the addition of new features to ChatGPT, including voice and vision capabilities](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak). Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during [DevDay](https://devday.openai.com/).
+My interest was reignited when OpenAI [announced the addition of new features to ChatGPT, including voice and vision capabilities](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak). Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during OpenAI [DevDay](https://devday.openai.com/).
 
 Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also drew insights from those who had gained access to ChatGPT with image input functionality.
-
-My assumptions led me to the following:
-- Image input will be integrated into the Chat completions API as an additional parameter.
-- The parameter will be in the form of a file object, similar to other APIs.
-- It should support the use of multiple files.
-
-So calling the Chat completion API might look like this:
-```javascript
-const completion = await openai.chat.completions.create({
-    messages: [{ role: "system", content: "You are a helpful assistant." }],
-    files: [
-        fs.createReadStream("image1.png"),
-        fs.createReadStream("image2.png")
-    ],
-    model: "gpt-4-vision",
-  });
-```
-
-Only time will tell if my assumptions are correct :P
 
 
 # DALL·E 3
 
-Since OpenAI added [DALL·E 3 image creation in ChatGPT](https://openai.com/blog/dall-e-3-is-now-available-in-chatgpt-plus-and-enterprise), users soon realized that it would have been better if they can use DALL·E 3 and Image Analysis at the same chat session. But the way it is currently implemented in ChatGPT, it seem not possible unless you download and upload the images back and forth from different sessions. As the Japanese would say, めんどくせー.
+Since OpenAI added [DALL·E 3 image creation in ChatGPT](https://openai.com/blog/dall-e-3-is-now-available-in-chatgpt-plus-and-enterprise), users soon realized that it would have been better if they can use DALL·E 3 and Image Analysis at the same chat session. But the way it is currently implemented in ChatGPT, it seem not possible unless you download and upload the images back and forth from different sessions.
 
-So for this project, I added DALL·E image creation ＼(^o^)／! However, when I was updating this project, DALL·E 3 API is not yet available 😂.
-
-To control image creation, I added instruction in the ***system prompt*** that the AI will only help in crafting the image prompt and let the user decide which one to create before triggering the image creation function.
+So for this project, I added DALL·E image creation ＼(^o^)／! However, as I am updating this project, DALL·E 3 API is not yet available so I am using DALL·E 2 ***with great expectations for DALL·E 3***! 😂
 
 Since DALL·E is a separate API, I will be using ***function calling*** to trigger image creation.
 
 ```javascript
 {
     "name": "create_image_dall-e",
-    "description": "Create image in DALL-E based prompt provided",
+    "description": "Create images in DALL-E based on prompts provided",
     "parameters": {
         "type": "object",
         "properties": {
-            "prompt": {
-                "type": "string",
-                "description": "The prompt based from user input"
-            },
-            "size": {
-                "type": "string",
-                "description": "The size of the image, use the default if the user does not provide any",
-                "default": "256x256",
-                "enum": [
-                    "256x256",
-                    "512x512",
-                    "1024x1024"
-                ]
-            },
-            "image_count": {
-                "type": "integer",
-                "description": "The number of images to generate, between 1 and 10",
-                "default": 0
+            "items": {
+                "type": "array",
+                "description": "List of prompts that the user selected",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "prompt": {
+                            "type": "string",
+                            "description": "The prompt based from user input"
+                        },
+                        "size": {
+                            "type": "string",
+                            "description": "The size of the image, use the default if the user does not provide any",
+                            "default": "256x256",
+                            "enum": [
+                                "256x256",
+                                "512x512",
+                                "1024x1024"
+                            ]
+                        },
+                        "image_count": {
+                            "type": "integer",
+                            "description": "The number of images to generate, between 1 and 10",
+                            "default": 0
+                        }
+                    },
+                    "required": ["prompt", "size", "image_count"]
+                }
             }
         },
-        "required": ["prompt", "size", "image_count"]
+        "required": ["items"]
     }
 }
 ```
 
-Here is the sample output:
+As you may have noticed, this will allow to create images from several prompts. 
+Furthermore, it also allow for the creation of several variations for each prompt.
+Theoretically, there is no restriction to how many images that can be created using this function.
+As for the prompts, in ChatGPT, each image has different prompt. I am thinking if I should do the same and just remove `image_count`.
+
+I also added instructions to control image creation in the `system prompt` including restricting the AI in prompt creation. I want the user to have the foremost authorship.
+
+```javascript
+`When the user wants to create an image, it means they want to create an image using DALL-E and you will help them to write the prompt for DALL-E.\n` +
+`When creating prompt for image creation, do not make up your own prompt.\n` +
+`Ask the user their own ideas of what image they want to be.\n` +
+`If the description is vague, clarify to the user some elements to make it clearer.` +
+`Confirm to the user the image prompt before calling create_image_dall-e.\n` +
+`If possible, give them several variations of possible prompts.\n` +
+```
+
+Here is a sample output
+
 ```javascript
 {
   role: 'assistant',
@@ -95,6 +101,7 @@ Here is the sample output:
 ```
 
 We will then call the DALL·E API
+
 ```javascript
 const image = await openai.images.generate({
   prompt: "Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.",
@@ -103,7 +110,7 @@ const image = await openai.images.generate({
 })
 ```
 
-After getting the result from DALL·E API, I will save the generated image to the server to make it available for image analysis, if needed. 
+After getting the results from DALL·E API, I will save the generated images to the server to make it available for image analysis later, if needed.
 
 Then I send everything back to the Chat completions API for summary. I do this to insert the image result in the conversation history. You will then receive a similar result from below:
 
@@ -118,7 +125,7 @@ Then I send everything back to the Chat completions API for summary. I do this t
 }
 ```
 
-At first, I used [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content directly but I cannot control how the images are shown specially if there are more than one images. The module allows the use of [plugin](https://github.com/remarkjs/react-markdown#use-a-plugin) but I do not have time to look into it. So, for now, I just made my own quick and dirty text formatting and my own way to show the output images.
+At first, I tried to use [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content directly but I cannot control how the images are shown specially if there are more than one images. The module allows for the use of [plugin](https://github.com/remarkjs/react-markdown#use-a-plugin) but I do not have time to look into it. So, for now, I just made my own quick and dirty text formatting to show the text and output images.
 
 <picture>
  <source media="(prefers-color-scheme: dark)" srcset="./docs/dall-e-1.png">
@@ -126,21 +133,20 @@ At first, I used [react-markdown](https://github.com/remarkjs/react-markdown#rea
  <img alt="Dall-E" src="./docs/dall-e-2.png">
 </picture>
 
----
-
-I use [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content and it should show the result with image.
-
-
-
-
 
 # GPT-4 Vision
 
-There are two ways to send image for analysis: 
-- included when you send your message
-- when your refer an image from the conversation. 
+From what I can gather, image input is included in API call together with the other chat parameters.
+In the app, there are two ways to perform image for analysis. First, you can send the image data together with your query. The number of images you can upload at one time is controlled by the variable `maxFileUploadCount` in the `next.config.js` file. I was assuming that gpt-4-vision will let multiple image input per call based on the behavior from ChatGPT but I am not sure, and if possible, what is the upper limit.
 
-To access the later, I will be using function calling.
+```javascript
+env: {
+    ...
+    maxFileUploadCount: 10,
+},
+```
+
+The second way to perform image analysis is by referring the image data from the context. For this case, I am using function calling to get the image data.
 
 ```javascript
 {
@@ -164,58 +170,11 @@ To access the later, I will be using function calling.
 ```
 
 This will tell me which image the query is referring. 
-All images in the conversation are stored in the server, including the one created by DALL·E.
-This makes it easier to use them for gpt-4-vision.
-
-The number of images you can upload at one time is controlled by the variable `maxFileUploadCount` in the `next.config.js` file. I was assuming that gpt-4-vision will let multiple image input per call based on the behavior from ChatGPT but I am not sure what is the upper limit.
-
-```javascript
-env: {
-    ...
-    maxFileUploadCount: 10,
-},
-```
 
 <picture>
  <source media="(prefers-color-scheme: dark)" srcset="./docs/upload1.png">
  <source media="(prefers-color-scheme: light)" srcset="./docs/upload2.png">
  <img alt="gpt-4-vision Image Input" src="./docs/upload2.png">
-</picture>
-
----
-
-I started this project with the aim of using image analysis with GPT-4, study how it works and use this as spring board for other interesting and perhaps useful apps. However, image input functionality was not yet available at that time. To work around this limitation, I opted for ml5's ImageClassifier, which is quite effective for basic object analysis. If your goal is to create an application like a "Bring Me" game app, it should suffice, in my opinion.
-
-My interest was rekindled when OpenAI announced that they were adding new features to ChatGPT, including voice and vision capabilities. Nevertheless, there was no specific mention of APIs, although there were rumors that everything would be revealed during DevDay.
-
-Consequently, I decided to revisit this project, picking up where I had left off. In the absence of any documentation for the API, I had to make educated guesses about how image input would be implemented, including the request parameters and response format. I also benefited from insights shared by those who had gained access to ChatGPT with image input functionality.
-
-My assumptions lead me to the following:
-- image input will be incorporated with the Chat completions API as another parameter
-- parameter will be file object like in other APIs
-- can allow multiple files
-
-So calling the Chat Completion API perhaps would look like this:
-```javascript
-const completion = await openai.chat.completions.create({
-    messages: [{ role: "system", content: "You are a helpful assistant." }],
-    files: [
-        fs.createReadStream("image1.png"),
-        fs.createReadStream("image2.png")
-    ],
-    model: "gpt-4-vision",
-  });
-```
-
-
-# Screenshot
-
-Upload an image or take a photo (for mobile users) and start chatting about it.
-
-<picture>
- <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot1.png">
- <source media="(prefers-color-scheme: light)" srcset="./docs/screenshot2.png">
- <img alt="Screenshot" src="./docs/screenshot2.png">
 </picture>
 
 
