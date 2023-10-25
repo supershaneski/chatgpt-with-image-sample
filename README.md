@@ -1,5 +1,5 @@
 chatgpt-with-image-sample
-======
+=====
 
 This sample project integrates OpenAI's [GPT-4 Vision](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak), with advanced image recognition capabilities, and [DALL·E 3](https://openai.com/dall-e-3), the state-of-the-art image generation model, with the [Chat completions API](https://platform.openai.com/docs/guides/gpt/chat-completions-api). This powerful combination allows for simultaneous image creation and analysis.
 
@@ -137,7 +137,7 @@ At first, I tried to use [react-markdown](https://github.com/remarkjs/react-mark
 # GPT-4 Vision
 
 From what I can gather, image input is included in API call together with the other chat parameters.
-In the app, there are two ways to perform image for analysis. First, you can send the image data together with your query. The number of images you can upload at one time is controlled by the variable `maxFileUploadCount` in the `next.config.js` file. I was assuming that gpt-4-vision will let multiple image input per call based on the behavior from ChatGPT but I am not sure, and if possible, what is the upper limit.
+In the app, there are two ways to perform image analysis. First, you can send the image data together with your query. The number of images you can upload at one time is controlled by the variable `maxFileUploadCount` in the `next.config.js` file. I was assuming that gpt-4-vision will let multiple image input per call based on the behavior from ChatGPT but I am not sure, and if possible, what is the upper limit.
 
 ```javascript
 env: {
@@ -151,20 +151,24 @@ The second way to perform image analysis is by referring the image data from the
 ```javascript
 {
     "name": "get_image_for_analysis",
-    "description": "Get image referenced by the user from conversation history",
+    "description": "Get image data referenced by the user from conversation history",
     "parameters": {
         "type": "object",
         "properties": {
-            "image": {
-                "type": "string",
-                "description": "The image referenced by the user, in URL form"
+            "images": {
+                "type": "array",
+                "description": "An array of the image data referenced by the user, in URL form",
+                "items": {
+                    "type": "string",
+                    "description": "Image data represented by a relative URL"
+                }
             },
             "query": {
                 "type": "string",
                 "description": "Query of the user"
             }
         },
-        "required": ["image", "query"]
+        "required": ["images", "query"]
     }
 }
 ```
