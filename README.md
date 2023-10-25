@@ -133,6 +133,8 @@ At first, I tried to use [react-markdown](https://github.com/remarkjs/react-mark
  <img alt="Dall-E" src="./docs/dall-e-2.png">
 </picture>
 
+If `stream` were set to true in Chat completions API, we could display a waiting message to the user before the DALL·E API is called, thereby enhancing the user experience. However, at present, I’m not familiar with how to implement streaming in Next.js. 
+
 
 # GPT-4 Vision
 
