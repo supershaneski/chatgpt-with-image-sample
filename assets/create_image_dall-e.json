@@ -24,13 +24,13 @@
                                 "1024x1024"
                             ]
                         },
-                        "image_count": {
+                        "n": {
                             "type": "integer",
                             "description": "The number of images to generate, between 1 and 10",
                             "default": 0
                         }
                     },
-                    "required": ["prompt", "size", "image_count"]
+                    "required": ["prompt", "size", "n"]
                 }
             }
         },
