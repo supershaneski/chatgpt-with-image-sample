@@ -258,15 +258,6 @@ export default function Sandbox() {
 
             let text = ret.result.content || setCaption('unexpected_error')
             
-            
-            /*let ret_image = []
-
-            if(ret.result.image && Array.isArray(ret.result.image) && ret.result.image.length > 0) {
-
-                ret_image = ret.result.image
-
-            }*/
-            
             let newAssistantItem = {
                 id: getSimpleId(),
                 gid: groupId,
@@ -286,16 +277,6 @@ export default function Sandbox() {
 
             }
 
-            /*
-            if(ret_image.length > 0) {
-                newAssistantItem.image = ret_image.map((img) => ({
-                    id: getSimpleId(),
-                    src: img.url,
-                    alt: img.alt,
-                }))
-            }
-            */
-            
             setMessageItems((prev) => [...prev, ...[newAssistantItem]])
             
         } catch(error) {

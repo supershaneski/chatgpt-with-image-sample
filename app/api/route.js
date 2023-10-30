@@ -2,14 +2,11 @@ import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
 import { pipeline } from 'stream'
-
 import { chatCompletion, imageCompletion } from '../../services/openai'
 import { trim_array, compact, parse_markdown_image_link, remove_trailing_commas } from '../../lib/utils'
-
 import create_image_dalle from '../../assets/create_image_dall-e.json'
 import get_image_for_analysis from '../../assets/get_image_for_analysis.json'
 import get_image_info from '../../assets/get_image_info.json'
-
 import captions from '../../assets/captions.json'
 
 const streamPipeline = promisify(pipeline)
