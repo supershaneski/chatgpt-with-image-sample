@@ -10,7 +10,7 @@ This sample project integrates OpenAI's [GPT-4 Vision](https://openai.com/blog/c
 
 # Motivation
 
-I started this project with the aim of using image analysis with GPT-4. However, at that time, image input was not yet available. In lieu of image input in Chat API, I used [ml5's ImageClassifier](#ml5-image-classifier) instead, which proved to be quite effective for basic object analysis. In my opinion, if your goal is just to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should suffice.
+I started this project with the aim of using image analysis with GPT-4. However, at that time, image input was not yet available. In lieu of image input in Chat API, I initially used [ml5's ImageClassifier](#ml5-image-classifier) instead, which proved to be quite effective for basic object analysis. In my opinion, if your goal is just to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should suffice.
 
 My interest was reignited when OpenAI [announced the addition of new features to ChatGPT, including voice and vision capabilities](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak). Nevertheless, there was no specific mention of APIs, although rumors suggested that everything would be unveiled during OpenAI [DevDay](https://devday.openai.com/).
 
@@ -19,9 +19,9 @@ Consequently, I decided to revisit this project, picking up where I had left off
 
 # DALL·E 3
 
-Since OpenAI added [DALL·E 3 image creation in ChatGPT](https://openai.com/blog/dall-e-3-is-now-available-in-chatgpt-plus-and-enterprise), users soon realized that it would have been better if they can use DALL·E 3 and Image Analysis at the same chat session. But the way it is currently implemented in ChatGPT, it seem not possible unless you download and upload the images back and forth from different sessions.
+Since OpenAI added [DALL·E 3 image creation in ChatGPT](https://openai.com/blog/dall-e-3-is-now-available-in-chatgpt-plus-and-enterprise), users soon realized that it would have been better if they can use DALL·E 3 and Image Analysis at the same chat session. At first, it seems not possible in ChatGPT unless you download and upload the images back and forth from different sessions. But the most recent update have now enabled this and ChatGPT users can now use Image Analysis and DALL·E 3 at the same session.
 
-So for this project, I added DALL·E image creation ＼(^o^)／! However, as I am updating this project, DALL·E 3 API is not yet available so I am using DALL·E 2 ***with great expectations for DALL·E 3***! 😂
+Anyway, in this chatbot project I added DALL·E image creation for this purpose. However, as I am updating this project, DALL·E 3 API is not yet available so I am using DALL·E 2 ***with great expectations for DALL·E 3 to be released soon***! 😂
 
 Since DALL·E is a separate API, I will be using ***function calling*** to trigger image creation.
 
