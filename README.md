@@ -1,6 +1,8 @@
 chatgpt-with-image-sample
 =====
 
+v0.0.2
+
 This sample project integrates OpenAI's [GPT-4 Vision](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak), with advanced image recognition capabilities, and [DALL·E 3](https://openai.com/dall-e-3), the state-of-the-art image generation model, with the [Chat completions API](https://platform.openai.com/docs/guides/gpt/chat-completions-api). This powerful combination allows for simultaneous image creation and analysis.
 
 ---
@@ -8,23 +10,20 @@ This sample project integrates OpenAI's [GPT-4 Vision](https://openai.com/blog/c
 このサンプルプロジェクトは、高度な画像認識機能を持つOpenAIの[GPT-4 Vision](https://openai.com/blog/chatgpt-can-now-see-hear-and-speak)と、最先端の画像生成モデルである[DALL·E 3](https://openai.com/dall-e-3)、そして[Chat completions API](https://platform.openai.com/docs/guides/gpt/chat-completions-api)を統合しています。この強力な組み合わせにより、画像の作成と分析を同時に行うことが可能になります。
 
 
+**Updated**: Using [v4.19.1 OpenAI Node module](https://www.npmjs.com/package/openai)
+
 # Motivation
 
-I started this project with the aim of using image analysis with GPT-4. However, at that time, image input was not yet available. In lieu of image input in Chat API, I initially used [ml5's ImageClassifier](#ml5-image-classifier) instead, which proved to be quite effective for basic object analysis. In my opinion, if your goal is just to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should suffice.
-
+I started this project with the aim of using image analysis with GPT-4. However, at that time, image input was not yet available. In lieu of image input in Chat API, I initially used [ml5's ImageClassifier](#ml5-image-classifier) instead, which proved to be quite effective for basic object analysis. In my opinion, if your goal is just to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should probably suffice.
 
 # DALL·E 3
 
-Since OpenAI added [DALL·E 3 image creation in ChatGPT](https://openai.com/blog/dall-e-3-is-now-available-in-chatgpt-plus-and-enterprise), users soon realized that it would have been better if they can use DALL·E 3 and Image Analysis at the same chat session. At first, it seems not possible in ChatGPT unless you download and upload the images back and forth from different sessions. But the most recent update have now enabled this and ChatGPT users can now use Image Analysis and DALL·E 3 at the same session.
-
-Anyway, in this chatbot project I added DALL·E image creation for this purpose. However, as I am updating this project, DALL·E 3 API is not yet available so I am using DALL·E 2 ***with great expectations for DALL·E 3 to be released soon***! 😂
-
-Since DALL·E is a separate API, I will be using ***function calling*** to trigger image creation.
+For [DALL·E 3 image creation](https://platform.openai.com/docs/guides/images/introduction?context=node), we will need to trigger the function call `create_image_dall-e`.
 
 ```javascript
 {
     "name": "create_image_dall-e",
-    "description": "Create images in DALL-E based on prompts provided",
+    "description": "Create images in DALL-E 3 based on prompts provided",
     "parameters": {
         "type": "object",
         "properties": {
@@ -41,20 +40,24 @@ Since DALL·E is a separate API, I will be using ***function calling*** to trigg
                         "size": {
                             "type": "string",
                             "description": "The size of the image, use the default if the user does not provide any",
-                            "default": "256x256",
+                            "default": "1024x1024",
                             "enum": [
-                                "256x256",
-                                "512x512",
-                                "1024x1024"
+                                "1024x1024",
+                                "1024x1792",
+                                "1792x1024"
                             ]
                         },
-                        "image_count": {
-                            "type": "integer",
-                            "description": "The number of images to generate, between 1 and 10",
-                            "default": 0
+                        "quality": {
+                            "type": "string",
+                            "description": "The quality of the image",
+                            "default": "standard",
+                            "enum": [
+                                "standard",
+                                "hd"
+                            ]
                         }
                     },
-                    "required": ["prompt", "size", "image_count"]
+                    "required": ["prompt", "size", "quality"]
                 }
             }
         },
@@ -63,79 +66,99 @@ Since DALL·E is a separate API, I will be using ***function calling*** to trigg
 }
 ```
 
-As you may have noticed, this will allow to create images from several prompts. 
-Furthermore, it also allow for the creation of several variations for each prompt.
-Theoretically, there is no restriction to how many images that can be created using this function.
-As for the prompts, in ChatGPT, each image has different prompt. I am thinking if I should do the same and just remove `image_count`.
-
-I also added instructions to control image creation in the `system prompt` including restricting the AI in prompt creation. I want the user to have the foremost authorship.
-
-```javascript
-`When the user wants to create an image, it means they want to create an image using DALL-E and you will help them to write the prompt for DALL-E.\n` +
-`When creating prompt for image creation, do not make up your own prompt.\n` +
-`Ask the user their own ideas of what image they want to be.\n` +
-`If the description is vague, clarify to the user some elements to make it clearer.` +
-`Confirm to the user the image prompt before calling create_image_dall-e.\n` +
-`If possible, give them several variations of possible prompts.\n` +
-```
-
-Here is a sample output
+Here is the sample output
 
 ```javascript
 {
-  role: 'assistant',
-  content: null,
-  function_call: {
-    name: 'create_image_dall-e',
-    arguments: '{\n' +
-      '  "prompt": "Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.",\n' +
-      '  "size": "512x512",\n' +
-      '  "image_count": 1\n' +
-      '}'
-  }
+  items: [
+    {
+      prompt: 'Generate an album cover for the ska band Tsokolate, conveying a cool ska aesthetic. The background is white. Inside a vintage muscle car colored in aquamarine, three band members are dressed in chic suits. Two members are seated in the front, and the driver is wearing shades. One member is sitting in the back. The image size is 1024x1792 and the quality is standard.',
+      size: '1024x1792',
+      quality: 'standard'
+    }
+  ]
 }
 ```
 
-We will then call the DALL·E API
+If you want to generate multiple images, you can ask the AI to generate several prompts and tell it to proceed to create image based on all the prompts. We can handle it in one API call since we are using array in our function.
 
 ```javascript
-const image = await openai.images.generate({
-  prompt: "Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.",
-  size: "512x512",
-  image_count: 1
-})
+let image_result = await Promise.all(
+    Array.from(image_items).map(async (img) => {
+
+        const image_prompt = img.prompt
+        const image_size = img.size
+        const image_quality = img.quality
+        
+        try {
+
+            const dalle_image = await openai.images.generate({ 
+                model: 'dall-e-3',
+                prompt: image_prompt,
+                quality: image_quality,
+                size: image_size
+            })
+
+            return {
+                prompt: image_prompt,
+                url: dalle_image.data[0].url
+            }
+
+        } catch(error) {
+
+            console.log(error.name, error.message)
+            
+            return null
+
+        }
+
+    })
+)
 ```
 
-After getting the results from DALL·E API, I will save the generated images to the server to make it available for image analysis later, if needed.
-
-Then I send everything back to the Chat completions API for summary. I do this to insert the image result in the conversation history. You will then receive a similar result from below:
+After receiveing the generated image urls from the API, we will then save a copy in our [/public/uploads](/public/uploads/) directory.
 
 ```javascript
-{
-  role: 'assistant',
-  content: "Done! Here's the image you requested:\n" +
-    '\n' +
-    '![Create a cartoon image of a spoon and fork personified as best friends, standing together with their arms around each other and wearing big smiles.](http://.../uploads/tmp-1698039103453-img-bPQwcK3fvmgDcZHwQEwdQ9JL.png)\n' +
-    '\n' +
-    "I hope this image matches your vision of a spoon and fork as best friends. Let me know if there's anything else I can assist you with!"
-}
+let image_list = await Promise.all(
+    Array.from(image_result).map(async (img) => {
+        
+        const filename = `tmp-${Date.now()}`
+        let filepath = path.join('public', 'uploads', filename)
+
+        const data_response = await fetch(img.url)
+
+        try {
+
+            await streamPipeline(data_response.body, fs.createWriteStream(filepath))
+
+            return {
+                url: `/uploads/${filename}`,
+                alt: `${img.prompt}`
+            }
+
+        } catch(error) {
+
+            console.log(name, error)
+
+            return null
+
+        }
+
+    })
+)
 ```
 
-At first, I tried to use [react-markdown](https://github.com/remarkjs/react-markdown#readme) to display the content directly but I cannot control how the images are shown specially if there are more than one images. The module allows for the use of [plugin](https://github.com/remarkjs/react-markdown#use-a-plugin) but I do not have time to look into it. So, for now, I just made my own quick and dirty text formatting to show the text and output images.
-
-<picture>
- <source media="(prefers-color-scheme: dark)" srcset="./docs/dall-e-1.png">
- <source media="(prefers-color-scheme: light)" srcset="./docs/dall-e-2.png">
- <img alt="Dall-E" src="./docs/dall-e-2.png">
-</picture>
-
-If `stream` were set to true in Chat completions API, we could display a waiting message to the user before the DALL·E API is called, thereby enhancing the user experience. However, at present, I’m not familiar with how to implement streaming in Next.js. 
+Now, when we submit the result back to **Chat Completions API**, we will not be including this data.
+We will just send the status and message. We will directly send the image data as part of the response back to the client and let the client deal with it.
 
 
 # GPT-4 Vision
 
-From what I can gather, image input is included in API call together with the other chat parameters.
-In the app, there are two ways to perform image analysis. First, you can send the image data together with your query. The number of images you can upload at one time is controlled by the variable `maxFileUploadCount` in the `next.config.js` file. I was assuming that gpt-4-vision will let multiple image input per call based on the behavior from ChatGPT but I am not sure, and if possible, what is the upper limit.
+For image analysis, we will be using the new [GPT-4 with Vision](https://platform.openai.com/docs/guides/vision), currently still in ***preview mode*** which means we only got **100 RPD**!
+
+In the app, there are two ways to send image for analysis: send image with query and refer to any image in the conversation.
+
+Currently, you can send as many as 10 images when you send your query. You can edit the number from `next.config.js` file:
 
 ```javascript
 env: {
@@ -144,7 +167,7 @@ env: {
 },
 ```
 
-The second way to perform image analysis is by referring the image data from the context. For this case, I am using function calling to get the image data.
+When you refer to an image in the conversation for image analysis, function calling will be triggered:
 
 ```javascript
 {
@@ -171,13 +194,108 @@ The second way to perform image analysis is by referring the image data from the
 }
 ```
 
-This will tell me which image the query is referring. 
+Here is the sample output
 
-<picture>
- <source media="(prefers-color-scheme: dark)" srcset="./docs/upload1.png">
- <source media="(prefers-color-scheme: light)" srcset="./docs/upload2.png">
- <img alt="gpt-4-vision Image Input" src="./docs/upload2.png">
-</picture>
+```javascript
+{
+  images: [ '/uploads/tmp170061562847486897_yasai.jpeg' ],
+  query: 'Identify long green vegetable'
+}
+```
+
+The GPT-4V supports image input either via URL or Base64 image. If URL, we will need it hosted somewhere with https. But we are using relative paths!
+No problemo. We have all the image files saved in the `/public/uploads` directory.
+
+When you send image with the query, we first upload the image and only send the relative url and base64 data with the query.
+
+When you refer to an image from the conversation, we use the relative path to get to the image file and encode it to base64.
+
+So, we are always sending base64 image data!
+
+# Sample Conversation
+
+Here is a sample conversation using image analysis and creation.
+
+![Which pants?](./docs/screenshot01.png)
+
+I uploaded 3 images of different pants and laid out a scenario and ask for fashion recommendation. So this will go straight to GPT-4V.
+
+I then ask follow up question for color of jacket, it tells me the appropriate color. Based on this, I uploaded 3 jackets of that color and ask for suggestion.
+
+![Which jacket?](./docs/screenshot02.png)
+
+Again, this will go straight to GPT-4V for analysis.
+
+I ask for what color of the tie will be good for gray pants and navy blue jacket. It gave me two suggestions: deep red and burgundy. So, I again scoured the web for such ties, uploaded it and ask it which one will be good.
+
+![Which tie?](./docs/screenshot03.png)
+
+![Which tie...](./docs/screenshot04.png)
+
+Okay, now we are all set. The wardrobe is complete. So I ask it to create the image of what I may look like wearing its fashion recommendation.
+
+Under the hood, the function calling is triggered
+
+```javascript
+{
+  items: [
+    {
+      prompt: 'A person wearing a navy blue blazer, gray trousers, a white dress shirt, and a solid burgundy tie. The person is standing in a professional setting.',
+      size: '1024x1024',
+      quality: 'standard'
+    }
+  ]
+}
+```
+
+Here is the output
+
+```javascript
+{
+  status: 'image generated',
+  message: "Done! Here's the image you requested...",
+  images: [
+  {
+    url: '/uploads/tmp-1700628156120-img-JjENGYQcLJ0q7E98XeRlUuQO.png',
+    alt: 'A person wearing a navy blue blazer, gray trousers, a white dress shirt, and a solid burgundy tie. The person is standing in a professional setting.'
+  }
+]
+}
+```
+
+![Stylish](./docs/screenshot05.png)
+
+Nice! But we ask it to make it a man instead. Again, function calling is triggered.
+
+```javascript
+{
+  items: [
+    {
+      prompt: 'A man wearing a navy blue blazer, gray trousers, a white dress shirt, and a solid burgundy tie.',
+      size: '1024x1024',
+      quality: 'standard'
+    }
+  ]
+}
+```
+
+And here is the output
+
+```javascript
+{
+  status: 'image generated',
+  message: "Done! Here's the image you requested...",
+  images: [
+  {
+    url: '/uploads/tmp-1700628230966-img-UMM4IXgWgonDQyyYTCMRY9H8.png',
+    alt: 'A man wearing a navy blue blazer, gray trousers, a white dress shirt, and a solid burgundy tie.'
+  }
+]
+}
+```
+
+![Gorgeous](./docs/screenshot06.png)
+
 
 
 # ML5 Image Classifier
