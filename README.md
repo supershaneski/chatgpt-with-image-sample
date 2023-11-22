@@ -16,6 +16,9 @@ This sample project integrates OpenAI's [GPT-4 Vision](https://openai.com/blog/c
 
 I started this project with the aim of using image analysis with GPT-4. However, at that time, image input was not yet available. In lieu of image input in Chat API, I initially used [ml5's ImageClassifier](#ml5-image-classifier) instead, which proved to be quite effective for basic object analysis. In my opinion, if your goal is just to create an application like a ***Bring Me*** or ***Scavenger Hunt*** type of game app, it should probably suffice.
 
+Since the new APIs were released recently, following OpenAI DevDay, I have updated this sample project to utilize the latest APIs and models.
+
+
 # DALL·E 3
 
 For [DALL·E 3 image creation](https://platform.openai.com/docs/guides/images/introduction?context=node), we will need to trigger the function call `create_image_dall-e`.
