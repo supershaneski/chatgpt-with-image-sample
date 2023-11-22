@@ -4,20 +4,16 @@ import React from 'react'
 
 import { createPortal } from 'react-dom'
 
-//import NoSsr from '@mui/base/NoSsr'
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
-//import Fab from '@mui/material/Fab'
-//import LinearProgress from '@mui/material/LinearProgress'
 
 import RestartIcon from '@mui/icons-material/RestartAlt'
 import AccountIcon from '@mui/icons-material/AccountCircle'
 import ClearIcon from '@mui/icons-material/Clear'
 import SendIcon from '@mui/icons-material/Send'
 import ImageIcon from '@mui/icons-material/Image'
-
 //import CloseIcon from '@mui/icons-material/HighlightOff'
 import CloseIcon from '@mui/icons-material/Cancel'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -34,24 +30,9 @@ import useCaption from '../lib/usecaption'
 import captions from '../assets/captions.json'
 //import useAppStore from '../stores/appstore'
 
-import { welcome_greeting, getSimpleId, compact, formatTextQuickDirty } from '../lib/utils'
+import { welcome_greeting, getSimpleId, compact, formatTextQuickDirty, truncateText } from '../lib/utils'
 
 import classes from './sandbox.module.css'
-
-const DataFlux = () => {
-    const [time, setTime] = React.useState('')
-    React.useEffect(() => {
-        const timer = setInterval(() => {
-            setTime((new Date()).toLocaleTimeString())
-        }, 1000)
-        return () => {
-            clearInterval(timer)
-        }
-    }, [])
-    return (
-        <span style={{fontSize: '.8rem', marginLeft: '1rem', color: '#8889' }}>{time}</span>
-    )
-}
 
 export default function Sandbox() {
 
@@ -59,7 +40,6 @@ export default function Sandbox() {
 
     const [lang, setCaption] = useCaption(captions)
 
-    const classifyRef = React.useRef()
     const fileRef = React.useRef(null)
     const inputRef = React.useRef(null)
     const messageRef = React.useRef(null)
@@ -68,7 +48,6 @@ export default function Sandbox() {
 
     const [inputFocus, setInputFocus] = React.useState(false)
     const [previewImage, setPreviewImage] = React.useState([])
-    //const [previewData, setPreviewData] = React.useState([])
     
     const [inputText, setInputText] = React.useState('')
     const [messageItems, setMessageItems] = React.useState([])
@@ -79,26 +58,8 @@ export default function Sandbox() {
 
         welcome_greeting()
 
-        loadLibrary()
-
     }, [])
-
-    const loadLibrary = async () => {
-
-        setLoading(true)
-        
-        const ml5 = (await import('ml5')).default
-
-        classifyRef.current = ml5.imageClassifier('MobileNet', onModelLoaded)
-
-    }
-
-    const onModelLoaded = () => {
-        
-        setLoading(false)
-
-    }
-
+    
     const handleSubmit = async (e) => {
 
         clearTimeout(timerRef.current)
@@ -141,11 +102,9 @@ export default function Sandbox() {
                         const response_upload = await fetch('/upload/', {
                             method: 'POST',
                             headers: {
-                                //'Content-Type': 'multipart/form-data',
                                 'Accept': 'application/json',
                             },
                             body: formData,
-                            //signal: abortControllerRef.current.signal,
                         })
 
                         if(!response_upload.ok) {
@@ -154,18 +113,20 @@ export default function Sandbox() {
 
                         const result_upload = await response_upload.json()
 
-                        const _name = result_upload.name
-                        const _url = result_upload.url
+                        //const _name = result_upload.name
+                        //const _url = result_upload.url
 
                         return {
                             id: image.id,
-                            name: _name,
-                            _name: image.file.name,
-                            src: _url,
-                            url: _url,
-                            _url: URL.createObjectURL(image.file),
-                            type: image.file.type,
-                            size: image.file.size,
+                            //name: _name,
+                            //_name: image.file.name,
+                            //src: _url,
+                            url: result_upload.url,
+                            //_url: URL.createObjectURL(image.file),
+                            //type: image.file.type,
+                            //size: image.file.size,
+                            base64: image.base64,
+                            alt: image.file.name,
                         }
 
                     } catch(error) {
@@ -177,44 +138,10 @@ export default function Sandbox() {
                 })
             )
             uploaded_files = compact(uploaded_files)
-
-            ////////////////////////////
-            let processed_images = await Promise.all(
-                Array.from(previewImage).map(async (image) => {
-
-                    let image_result = null
-                    
-                    await classifyRef.current.classify(image._image, (error, results) => {
-
-                        if(error) {
-                          console.log(error.name, error.message)
-                          return
-                        }
-
-                        image_result = results
-
-                    })
-
-                    return {
-                        ...image,
-                        result: image_result
-                    }
-                    
-                })
-            )
             
-            uploaded_files = uploaded_files.map((file) => {
-                const proc_sel_image = processed_images.find((img) => img.id === file.id)
-                return {
-                    ...file,
-                    result: proc_sel_image ? proc_sel_image.result : null
-                }
-            })
-
             const image_markdown = uploaded_files.map((img) => {
-                return `![${img.name}](${img.url} "${img.id}")\n`
+                return `![${img.alt}](${img.url} "${img.id}")\n`
             })
-            ////////////////////////////
 
             newUserItem.image = uploaded_files
             newUserItem.content = image_markdown + '\n\n' + newUserItem.content
@@ -271,9 +198,15 @@ export default function Sandbox() {
 
                 newAssistantItem.image = ret.result.image.map((img) => ({
                     id: getSimpleId(),
-                    src: img.url,
-                    alt: img.alt,
+                    url: img.url,
+                    alt: truncateText(img.alt),
                 }))
+
+                const output_image_markdown = newAssistantItem.image.map((img) => {
+                    return `![${img.alt}](${img.url} "${img.id}")\n`
+                })
+
+                newAssistantItem.content = newAssistantItem.content + '\n\n' + output_image_markdown
 
             }
 
@@ -343,9 +276,10 @@ export default function Sandbox() {
 
                 const newImage = {
                     id: Date.now(),
-                    src: image.src,
+                    src: image.src, //
                     file: file,
-                    _image: image,
+                    _image: image, //
+                    base64: reader.result,
                 }
 
                 setPreviewImage((prevImgs) => [...prevImgs, ...[newImage]])
@@ -418,7 +352,7 @@ export default function Sandbox() {
         <div className={classes.container}>
             <div className={classes.main}>
                 <div className={classes.header}>
-                    <h4 className={classes.title}>{process.env.siteTitle}</h4><DataFlux />
+                    <h4 className={classes.title}>{process.env.siteTitle}</h4>
                 </div>
                 <div ref={messageRef} className={classes.messageList}>
                     {
@@ -444,8 +378,8 @@ export default function Sandbox() {
                                             {
                                                 item.image.map((img) => {
                                                     return (
-                                                        <a className={classes.link} key={img.id} href={`${img.src}`} target="_blank">
-                                                            <img className={classes.image} src={img.src} />
+                                                        <a className={classes.link} key={img.id} href={`${img.url}`} target="_blank">
+                                                            <img className={classes.image} src={img.url} />
                                                         </a>
                                                     )
                                                 })
@@ -472,8 +406,8 @@ export default function Sandbox() {
                                             {
                                                 item.image.map((img) => {
                                                     return (
-                                                        <a className={classes.link} key={img.id} href={`${img.src}`} target="_blank">
-                                                            <img key={img.src} className={classes.image} src={img.src} alt={img.alt} />
+                                                        <a className={classes.link} key={img.id} href={`${img.url}`} target="_blank">
+                                                            <img key={img.src} className={classes.image} src={img.url} alt={img.alt} />
                                                         </a>
                                                     )
                                                 })
@@ -517,7 +451,9 @@ export default function Sandbox() {
                         {
                         !inputFocus && messageItems.length > 0 &&
                             <div className={classes.roundButton}>
-                                <IconButton size="large" onClick={handleReset}>
+                                <IconButton 
+                                disabled={isProcessing}
+                                size="large" onClick={handleReset}>
                                     <RestartIcon className={classes.restartIcon} fontSize="inherit" />
                                 </IconButton>
                             </div>
