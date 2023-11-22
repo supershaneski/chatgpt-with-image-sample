@@ -15,7 +15,6 @@
     "@fontsource/roboto": "^5.0.3",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.6",
-    "ml5": "^0.12.2",
     "next": "^13.4.7",
     "openai": "^4.19.1",
     "react": "^18.2.0",
